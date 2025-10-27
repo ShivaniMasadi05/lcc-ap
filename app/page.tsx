@@ -26,7 +26,7 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json()
         if (data && data.message && data.message !== "Guest") {
-          router.push('/welcome')
+          router.push('/todaycauselist')
         }
       }
     } catch (error) {
@@ -98,7 +98,7 @@ export default function LoginPage() {
       }
 
       setMessage("Signed in. Redirecting…")
-      router.push('/welcome')
+      router.push('/todaycauselist')
     } catch (err: any) {
       let text = (err && err.message) ? err.message : "Login failed. Please try again."
       
