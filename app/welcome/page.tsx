@@ -45,7 +45,7 @@ export default function WelcomePage() {
       
       if (response.ok) {
         // Clear any local storage
-        localStorage.removeItem("crimescan_remember")
+        localStorage.removeItem("lcc_ap_remember")
         // Redirect to login page
         router.push('/')
       } else {
@@ -62,7 +62,7 @@ export default function WelcomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-crimescan-bg crimescan-radial flex items-center justify-center">
+      <div className="min-h-screen bg-lcc-ap-bg lcc-ap-radial flex items-center justify-center">
         <div className="glass-card p-8 text-center">
           <div className="loading-spinner mx-auto mb-4"></div>
           <div className="gradient-text text-xl font-semibold">Loading Legal Command Center...</div>
@@ -72,14 +72,14 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-crimescan-bg crimescan-radial">
+    <div className="min-h-screen bg-lcc-ap-bg lcc-ap-radial">
       {/* Navigation Bar */}
-      <nav className="crimescan-navbar">
-        <div className="crimescan-nav-content">
-          <h1 className="crimescan-nav-title">Legal Command Center</h1>
+      <nav className="lcc-ap-navbar">
+        <div className="lcc-ap-nav-content">
+          <h1 className="lcc-ap-nav-title">Legal Command Center</h1>
           <button
             onClick={handleLogout}
-            className="crimescan-signout-btn"
+            className="lcc-ap-signout-btn"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -90,7 +90,7 @@ export default function WelcomePage() {
       </nav>
 
       {/* Welcome Content */}
-      <div className="crimescan-welcome-content">
+      <div className="lcc-ap-welcome-content">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4" style={{color: 'white'}}>Welcome to Legal Command Center</h2>
         </div>

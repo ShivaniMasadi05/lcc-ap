@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        crimescan: {
+        lccap: {
           50:  '#f3f8ff',
           100: '#e6f0ff',
           200: '#bfdfff',
@@ -38,9 +38,9 @@ module.exports = {
         'xl-20': '20px',
       },
       boxShadow: {
-        'crimescan-sm': '0 6px 18px rgba(2,6,23,0.45)',
-        'crimescan-lg': '0 10px 30px rgba(0,0,0,0.35)',
-        'crimescan-glow': '0 8px 32px rgba(59,130,246,0.12)',
+        'lcc-ap-sm': '0 6px 18px rgba(2,6,23,0.45)',
+        'lcc-ap-lg': '0 10px 30px rgba(0,0,0,0.35)',
+        'lcc-ap-glow': '0 8px 32px rgba(59,130,246,0.12)',
       },
       backdropBlur: {
         sm: '4px',
@@ -52,19 +52,19 @@ module.exports = {
       },
       gradientColorStops: theme => ({
         ...theme('colors'),
-        'crimescan-primary-from': '#3b82f6',
-        'crimescan-primary-to': '#06b6d4',
-        'crimescan-secondary-from': '#10b981',
-        'crimescan-secondary-to': '#059669',
-        'crimescan-rating-from': '#fbbf24',
-        'crimescan-rating-to': '#f59e0b',
+        'lcc-ap-primary-from': '#3b82f6',
+        'lcc-ap-primary-to': '#06b6d4',
+        'lcc-ap-secondary-from': '#10b981',
+        'lcc-ap-secondary-to': '#059669',
+        'lcc-ap-rating-from': '#fbbf24',
+        'lcc-ap-rating-to': '#f59e0b',
       }),
       backgroundImage: {
-        'crimescan-radial': 'radial-gradient(1200px 800px at 20% -10%, #1b2650 0, transparent 60%)',
+        'lcc-ap-radial': 'radial-gradient(1200px 800px at 20% -10%, #1b2650 0, transparent 60%)',
         'glass-gradient': 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
       },
       transitionTimingFunction: {
-        'crimescan-smooth': 'cubic-bezier(.2,.9,.2,1)'
+        'lcc-ap-smooth': 'cubic-bezier(.2,.9,.2,1)'
       },
       opacity: {
         'glass-veil': '0.06'

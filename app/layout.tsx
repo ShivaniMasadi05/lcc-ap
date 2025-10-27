@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Legal Command Center',
-  description: 'Crimescan authentication system with Frappe backend',
+  description: 'LCC-AP authentication system with Frappe backend',
 }
 
 export default function RootLayout({

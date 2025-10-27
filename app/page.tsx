@@ -89,11 +89,11 @@ export default function LoginPage() {
       // Handle remember me
       if (remember) {
         try { 
-          localStorage.setItem("crimescan_remember", "1") 
+          localStorage.setItem("lcc_ap_remember", "1") 
         } catch (_) {}
       } else {
         try { 
-          localStorage.removeItem("crimescan_remember") 
+          localStorage.removeItem("lcc_ap_remember") 
         } catch (_) {}
       }
 
@@ -118,13 +118,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="crimescan-login-container">
-      <div className="crimescan-login-card">
-        <h1 className="crimescan-login-title">Sign in to Legal Command Center</h1>
-        <p className="crimescan-login-sub">Use your email and password to continue.</p>
+    <div className="lcc-ap-login-container">
+      <div className="lcc-ap-login-card">
+        <h1 className="lcc-ap-login-title">Sign in to Legal Command Center</h1>
+        <p className="lcc-ap-login-sub">Use your email and password to continue.</p>
 
-        <form onSubmit={handleSubmit} className="crimescan-login-form">
-          <label htmlFor="email" className="crimescan-label">Username or Email</label>
+        <form onSubmit={handleSubmit} className="lcc-ap-login-form">
+          <label htmlFor="email" className="lcc-ap-label">Username or Email</label>
           <input
             id="email"
             type="text"
@@ -133,11 +133,11 @@ export default function LoginPage() {
             placeholder="Username or Email"
             autoComplete="username"
             required
-            className="crimescan-input"
+            className="lcc-ap-input"
           />
 
-          <label htmlFor="password" className="crimescan-label">Password</label>
-          <div className="crimescan-password-container">
+          <label htmlFor="password" className="lcc-ap-label">Password</label>
+          <div className="lcc-ap-password-container">
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -146,12 +146,12 @@ export default function LoginPage() {
               placeholder="••••••••"
               autoComplete="current-password"
               required
-              className="crimescan-input"
+              className="lcc-ap-input"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="crimescan-password-toggle"
+              className="lcc-ap-password-toggle"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
@@ -168,14 +168,14 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="crimescan-row">
-            <label className="crimescan-checkbox-label">
+          <div className="lcc-ap-row">
+            <label className="lcc-ap-checkbox-label">
               <input
                 id="remember"
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="crimescan-checkbox"
+                className="lcc-ap-checkbox"
               />
               <span>Stay signed in</span>
             </label>
@@ -184,11 +184,11 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="crimescan-btn"
+            className="lcc-ap-btn"
           >
             {loading ? (
               <>
-                <div className="crimescan-spinner"></div>
+                <div className="lcc-ap-spinner"></div>
                 Signing in…
               </>
             ) : (
@@ -197,17 +197,17 @@ export default function LoginPage() {
           </button>
 
           {message && (
-            <div className={`crimescan-message ${
+            <div className={`lcc-ap-message ${
               message.includes('error') || message.includes('failed') || message.includes('Invalid')
-                ? 'crimescan-message-error' 
-                : 'crimescan-message-info'
+                ? 'lcc-ap-message-error' 
+                : 'lcc-ap-message-info'
             }`}>
               {message}
             </div>
           )}
         </form>
 
-        <div className="crimescan-footer">
+        <div className="lcc-ap-footer">
         </div>
       </div>
     </div>
