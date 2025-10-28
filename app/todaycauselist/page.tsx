@@ -104,21 +104,21 @@ export default function TodaysCauseListPage() {
             <p>Access the complete list of all court cases scheduled for today. View comprehensive case details, timings, and courtroom assignments.</p>
           </div>
 
-          <div className="court-card filtered-cases" onClick={() => window.open('https://dev2.crimescan.ai/dailycauselist507', '_blank')}>
+          <div className="court-card filtered-cases" onClick={() => window.open('http://localhost:3000/dailycauselist507', '_blank')}>
             <div className="card-badge">Filtered</div>
             <div className="card-icon">🔍</div>
             <h2>Filtered Cases</h2>
             <p>Browse through filtered and categorized court cases. Find specific cases based on criteria, case types, or other filtering parameters.</p>
           </div>
 
-          <div className="court-card case-search" onClick={() => window.open('https://dev2.crimescan.ai/case-search', '_blank')}>
+          <div className="court-card case-search" onClick={() => window.open('http://localhost:3000/case-search', '_blank')}>
             <div className="card-badge">Search</div>
             <div className="card-icon">🔎</div>
             <h2>Case Search</h2>
             <p>Search for specific court cases using various search criteria. Find cases by case number, party names, date range, or other parameters.</p>
           </div>
 
-          <div className="court-card high-priority-cases" onClick={() => window.open('https://dev2.crimescan.ai/highpriorityv2', '_blank')}>
+          <div className="court-card high-priority-cases" onClick={() => window.open('http://localhost:3000/highpriorityv2', '_blank')}>
             <div className="card-badge priority-badge">Priority</div>
             <div className="card-icon">🚨</div>
             <h2>High Priority Cases</h2>
