@@ -278,7 +278,7 @@ body {
 /* LCC-AP Login Page Styles */
 .lcc-ap-login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #e0e7ff 0%, #f5f7fa 50%, #e0f2fe 100%);
+  background: #ffffff;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -487,9 +487,14 @@ body {
 /* Welcome Page Styles */
 .welcome-page-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   display: flex;
   flex-direction: column;
+}
+
+/* Typography for Today's Cause List (welcome-page-container scope) */
+.welcome-page-container, .welcome-page-container * {
+  font-family: Arial, 'Helvetica', sans-serif;
 }
 
 .welcome-content-wrapper {
@@ -503,19 +508,22 @@ body {
 .welcome-header {
   text-align: center;
   margin-bottom: 40px;
-  color: white;
+  color: #333333;
 }
 
 .welcome-header h1 {
-  font-size: 2.5rem;
+  font-size: 24px; /* H1: 22–26px */
   font-weight: 700;
   margin-bottom: 10px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  font-style: normal;
 }
 
 .welcome-header p {
-  font-size: 1.1rem;
+  font-size: 15px; /* Body: 14–16px */
   opacity: 0.9;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .cards-grid {
@@ -568,15 +576,15 @@ body {
 }
 
 .court-card h2 {
-  font-size: 1.5rem;
+  font-size: 20px; /* H2: 18–20px */
   margin-bottom: 15px;
   color: #333;
-  font-weight: 600;
+  font-weight: 600; /* Semi-Bold */
 }
 
 .court-card p {
   color: #666;
-  font-size: 1rem;
+  font-size: 14px; /* Body: 14–16px */
   line-height: 1.6;
 }
 
@@ -599,8 +607,9 @@ body {
 .welcome-footer {
   margin-top: 40px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
+  color: #666666;
+  font-size: 12px; /* Captions/Notes */
+  font-style: italic; /* Captions/Notes */
 }
 
 @media (max-width: 768px) {
