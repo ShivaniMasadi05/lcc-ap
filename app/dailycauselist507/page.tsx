@@ -18,10 +18,10 @@ export default function DailyCauseList507Page() {
     padding: 0;
   }
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, 'Helvetica', sans-serif;
     line-height: 1.6;
     color: #333;
-    background-color: #f5f7fa;
+    background-color: #ffffff;
   }
   .container {
     max-width: 1400px;
@@ -40,6 +40,7 @@ export default function DailyCauseList507Page() {
   }
   header h1 {
     font-size: 24px;
+    font-weight: bold;
     display: flex;
     align-items: center;
     color: #2c3e50;
@@ -213,7 +214,8 @@ export default function DailyCauseList507Page() {
     background-color: #e3f2fd;
   }
   .filter-title {
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: 600;
     margin-bottom: 5px;
   }
   
@@ -370,7 +372,17 @@ export default function DailyCauseList507Page() {
     margin-bottom: 20px;
   }
   .empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
     margin-bottom: 10px;
+    color: #2c3e50;
+  }
+  
+  /* Filters heading specific styling */
+  .filters-container h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
     color: #2c3e50;
   }
   .empty-state p {
@@ -446,6 +458,7 @@ export default function DailyCauseList507Page() {
   .modal-header h2 {
     margin: 0;
     font-size: 20px;
+    font-weight: 600;
     color: #2c3e50;
     display: flex;
     align-items: center;
@@ -494,7 +507,8 @@ export default function DailyCauseList507Page() {
   .form-group label {
     display: block;
     margin-bottom: 8px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: normal;
     color: #2c3e50;
   }
   .form-control {
@@ -536,7 +550,8 @@ export default function DailyCauseList507Page() {
   .prayer-link {
     color: #9b59b6;
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
+    font-style: italic;
     cursor: pointer;
   }
   .prayer-link:hover {
@@ -568,6 +583,8 @@ export default function DailyCauseList507Page() {
     margin: 15px 0;
   }
   .confirmation-dialog h4 {
+    font-size: 18px;
+    font-weight: 600;
     color: #856404;
     margin-bottom: 10px;
   }
