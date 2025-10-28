@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Disable all caching for fresh data on every request
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -11,13 +16,25 @@ export async function GET(
       method: 'GET',
       headers: {
         'Cookie': request.headers.get('cookie') || '',
+        'Accept': 'application/json, text/plain, */*',
       },
+      cache: 'no-store',
     })
 
-    const data = await response.json()
+    const contentType = response.headers.get('content-type') || ''
+    const rawBody = await response.text()
+    let data: any = rawBody
+    if (contentType.includes('application/json')) {
+      try {
+        data = JSON.parse(rawBody)
+      } catch (_) {}
+    }
     
     // Forward the response with cookies
-    const nextResponse = NextResponse.json(data, { status: response.status })
+    const nextResponse = contentType.includes('application/json')
+      ? NextResponse.json(data, { status: response.status })
+      : new NextResponse(rawBody, { status: response.status, headers: { 'content-type': contentType || 'text/plain' } })
+    nextResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     
     // Copy cookies from Frappe response to Next.js response
     const setCookieHeader = response.headers.get('set-cookie')
@@ -48,12 +65,21 @@ export async function PUT(
         'X-Frappe-CSRF-Token': request.headers.get('x-frappe-csrf-token') || '',
       },
       body: body,
+      cache: 'no-store',
     })
 
-    const data = await response.json()
+    const contentType2 = response.headers.get('content-type') || ''
+    const rawBody2 = await response.text()
+    let data2: any = rawBody2
+    if (contentType2.includes('application/json')) {
+      try { data2 = JSON.parse(rawBody2) } catch (_) {}
+    }
     
     // Forward the response with cookies
-    const nextResponse = NextResponse.json(data, { status: response.status })
+    const nextResponse = contentType2.includes('application/json')
+      ? NextResponse.json(data2, { status: response.status })
+      : new NextResponse(rawBody2, { status: response.status, headers: { 'content-type': contentType2 || 'text/plain' } })
+    nextResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     
     // Copy cookies from Frappe response to Next.js response
     const setCookieHeader = response.headers.get('set-cookie')

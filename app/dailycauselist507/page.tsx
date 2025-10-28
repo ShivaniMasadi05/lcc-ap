@@ -1148,7 +1148,7 @@ async function fetchAvailableDates() {
  console.log('Fetching available cause list dates...');
  
  try {
-   const res = await fetch('/api/frappe/cases?fields=["cause_list_date"]&limit=0');
+   const res = await fetch('/api/frappe/cases?fields=["cause_list_date"]&limit=0', { cache: 'no-store' });
    const data = await res.json();
    
    // Extract unique dates
@@ -1197,7 +1197,7 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
    
    // Fetch cases within the date range
    console.log(\`Fetching cases for date range: \${startDateParam} to \${endDateParam}\`);
-   const res = await fetch(\`/api/frappe/cases?filters=[["cause_list_date",">=","\${startDateParam}"],["cause_list_date","<=","\${endDateParam}"]]&limit=0\`);
+   const res = await fetch(\`/api/frappe/cases?filters=[["cause_list_date",">=","\${startDateParam}"],["cause_list_date","<=","\${endDateParam}"]]&limit=0\`, { cache: 'no-store' });
    const data = await res.json();
    
    // Filter out cases marked as not relevant
@@ -1218,7 +1218,7 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
    
    // Fetch full details in batches for better performance
    let processedCount = 0;
-   const batchSize = 10;
+   const batchSize = 5;
   
   for (let i = 0; i < relevantCases.length; i += batchSize) {
     const batch = relevantCases.slice(i, i + batchSize);
@@ -1227,7 +1227,7 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
     // Fetch full details for this batch
     const batchDetails = await Promise.all(
       batch.map(doc =>
-        fetch(\`/api/frappe/cases/\${doc.name}\`)
+        fetch(\`/api/frappe/cases/\${doc.name}\`, { cache: 'no-store' })
           .then(r => r.json())
           .then(d => {
             processedCount++;
