@@ -62,7 +62,7 @@ export default function TodaysCauseListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-lcc-ap-bg lcc-ap-radial flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="glass-card p-8 text-center">
           <div className="loading-spinner mx-auto mb-4"></div>
           <div className="gradient-text text-xl font-semibold">Loading Legal Command Center...</div>
@@ -72,7 +72,7 @@ export default function TodaysCauseListPage() {
   }
 
   return (
-    <div className="welcome-page-container">
+    <div className="welcome-page-container bg-gray-50">
       {/* Navigation Bar */}
       <nav className="lcc-ap-navbar">
         <div className="lcc-ap-nav-content">
@@ -90,7 +90,7 @@ export default function TodaysCauseListPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="welcome-content-wrapper">
+      <div className="welcome-content-wrapper bg-white text-black">
         <div className="welcome-header">
           <h1>Today&apos;s Cause List</h1>
           <p>Access court case information and filtered listings</p>
@@ -104,21 +104,21 @@ export default function TodaysCauseListPage() {
             <p>Access the complete list of all court cases scheduled for today. View comprehensive case details, timings, and courtroom assignments.</p>
           </div>
 
-          <div className="court-card filtered-cases" onClick={() => window.open('http://localhost:3000/dailycauselist507', '_blank')}>
+          <div className="court-card filtered-cases" onClick={() => window.open(process.env.NODE_ENV === 'production' ? 'https://lcc-ap.netlify.app/dailycauselist507' : '/dailycauselist507', '_blank')}>
             <div className="card-badge">Filtered</div>
             <div className="card-icon">🔍</div>
             <h2>Filtered Cases</h2>
             <p>Browse through filtered and categorized court cases. Find specific cases based on criteria, case types, or other filtering parameters.</p>
           </div>
 
-          <div className="court-card case-search" onClick={() => window.open('http://localhost:3000/case-search', '_blank')}>
+          <div className="court-card case-search" onClick={() => window.open('/case-search', '_blank')}>
             <div className="card-badge">Search</div>
             <div className="card-icon">🔎</div>
             <h2>Case Search</h2>
             <p>Search for specific court cases using various search criteria. Find cases by case number, party names, date range, or other parameters.</p>
           </div>
 
-          <div className="court-card high-priority-cases" onClick={() => window.open('http://localhost:3000/highpriorityv2', '_blank')}>
+          <div className="court-card high-priority-cases" onClick={() => window.open('/highpriorityv2', '_blank')}>
             <div className="card-badge priority-badge">Priority</div>
             <div className="card-icon">🚨</div>
             <h2>High Priority Cases</h2>

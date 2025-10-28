@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Disable all caching for fresh data on every request
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -23,13 +28,27 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Cookie': request.headers.get('cookie') || '',
+        'Accept': 'application/json, text/plain, */*',
       },
+      cache: 'no-store',
     })
 
-    const data = await response.json()
+    const contentType = response.headers.get('content-type') || ''
+    const rawBody = await response.text()
+    let data: any = rawBody
+    if (contentType.includes('application/json')) {
+      try {
+        data = JSON.parse(rawBody)
+      } catch (_) {
+        // leave data as raw text
+      }
+    }
     
-    // Forward the response with cookies
-    const nextResponse = NextResponse.json(data, { status: response.status })
+    // Forward the response with cookies, preserving upstream status
+    const nextResponse = contentType.includes('application/json')
+      ? NextResponse.json(data, { status: response.status })
+      : new NextResponse(rawBody, { status: response.status, headers: { 'content-type': contentType || 'text/plain' } })
+    nextResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
     
     // Copy cookies from Frappe response to Next.js response
     const setCookieHeader = response.headers.get('set-cookie')
