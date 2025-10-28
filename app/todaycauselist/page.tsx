@@ -118,7 +118,7 @@ export default function TodaysCauseListPage() {
             <p>Search for specific court cases using various search criteria. Find cases by case number, party names, date range, or other parameters.</p>
           </div>
 
-          <div className="court-card high-priority-cases" onClick={() => window.open('/highpriorityv2', '_blank')}>
+          <div className="court-card high-priority-cases" onClick={() => window.open(process.env.NODE_ENV === 'production' ? 'https://lcc-ap.netlify.app/highpriorityv2' : '/highpriorityv2', '_blank')}>
             <div className="card-badge priority-badge">Priority</div>
             <div className="card-icon">🚨</div>
             <h2>High Priority Cases</h2>
