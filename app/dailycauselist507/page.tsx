@@ -609,6 +609,9 @@ export default function DailyCauseList507Page() {
       <button class="btn add-missing-case-btn" id="add-missing-case-btn">
         <i class="fas fa-plus-circle"></i> Add Missing Case
       </button>
+      <button class="btn btn-secondary" id="signout-btn">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
     </div>
   </header>
 
@@ -2247,6 +2250,27 @@ renderCases();
 document.getElementById('refresh-btn').addEventListener('click', () => {
 console.log('Refresh button clicked');
 fetchAvailableDates(); // Refresh the complete data
+});
+
+// Event listener for signout button
+document.getElementById('signout-btn').addEventListener('click', async () => {
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      localStorage.removeItem('lcc_ap_remember');
+      window.location.href = '/';
+    } else {
+      console.error('Logout failed');
+      window.location.href = '/';
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    window.location.href = '/';
+  }
 });
 
 // Close modal when clicking outside of content

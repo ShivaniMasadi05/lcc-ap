@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Ccms2Case = {
   name?: string;
@@ -92,6 +93,7 @@ function getCaseStatus(hearingDate?: string): "overdue" | "today" | "tomorrow" |
 }
 
 export default function HighPriorityV2Page(): JSX.Element {
+  const router = useRouter();
   const [cases, setCases] = useState<Ccms2Case[]>([]);
   const [currentFilter, setCurrentFilter] = useState<
     "all" | "overdue" | "today" | "tomorrow" | "upcoming"
@@ -281,6 +283,26 @@ export default function HighPriorityV2Page(): JSX.Element {
     }
   }, [username, password, fetchData]);
 
+  const handleLogout = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+      
+      if (response.ok) {
+        localStorage.removeItem("lcc_ap_remember");
+        router.push('/');
+      } else {
+        console.error("Logout failed");
+        router.push('/');
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      router.push('/');
+    }
+  }, [router]);
+
   useEffect(() => {
     const init = async () => {
       const authenticated = await checkAuth();
@@ -304,16 +326,30 @@ export default function HighPriorityV2Page(): JSX.Element {
   return (
     <div className="hpv2-container container">
       <div className="header">
-        <h1>🏛️ High Priority Cases Dashboard</h1>
-        <p>Real-time monitoring of critical CCMS2 cases</p>
-        {!isAuthenticated && (
-          <button 
-            className="btn btn-primary login-btn-header"
-            onClick={() => setShowLoginModal(true)}
-          >
-            🔐 Login to View Cases
-          </button>
-        )}
+        <div className="header-content">
+          <div className="header-text">
+            <h1>🏛️ High Priority Cases Dashboard</h1>
+            <p>Real-time monitoring of critical CCMS2 cases</p>
+          </div>
+          {isAuthenticated ? (
+            <button 
+              className="btn btn-secondary signout-btn"
+              onClick={handleLogout}
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign Out
+            </button>
+          ) : (
+            <button 
+              className="btn btn-primary login-btn-header"
+              onClick={() => setShowLoginModal(true)}
+            >
+              🔐 Login to View Cases
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="stats-container">
@@ -590,9 +626,13 @@ export default function HighPriorityV2Page(): JSX.Element {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f6fa; min-height: 100vh; color: #333; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; color: #2c3e50; }
+        .header { margin-bottom: 30px; color: #2c3e50; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .header-text { text-align: center; flex: 1; }
         .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
         .header p { font-size: 15px; opacity: 0.7; color: #6c757d; }
+        .signout-btn { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .signout-btn svg { flex-shrink: 0; }
         .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--accent-color, #007bff), var(--accent-light, #4dabf7)); }
@@ -678,6 +718,8 @@ export default function HighPriorityV2Page(): JSX.Element {
         .hpv2-container .cases-subtitle, .hpv2-container .caption { font-size: 12px; font-style: italic; }
         @media (max-width: 768px) {
           .container { padding: 15px; }
+          .header-content { flex-direction: column; text-align: center; }
+          .header-text { text-align: center; }
           .header h1 { font-size: 2rem; }
           .stats-container { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
           .stat-number { font-size: 2rem; }
