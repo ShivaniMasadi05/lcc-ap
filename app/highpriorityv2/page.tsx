@@ -304,6 +304,12 @@ export default function HighPriorityV2Page(): JSX.Element {
   }, [router]);
 
   useEffect(() => {
+    // Load FontAwesome
+    const link = document.createElement('link')
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+    link.rel = 'stylesheet'
+    document.head.appendChild(link)
+    
     const init = async () => {
       const authenticated = await checkAuth();
       if (authenticated) {
@@ -325,30 +331,34 @@ export default function HighPriorityV2Page(): JSX.Element {
 
   return (
     <div className="hpv2-container container">
+      <div className="main-header">
+        <h1 className="main-title"><i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+        {isAuthenticated ? (
+          <button 
+            className="lcc-ap-signout-btn"
+            onClick={handleLogout}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out
+          </button>
+        ) : (
+          <button 
+            className="lcc-ap-signout-btn"
+            onClick={() => setShowLoginModal(true)}
+          >
+            🔐 Login to View Cases
+          </button>
+        )}
+      </div>
+      
       <div className="header">
         <div className="header-content">
           <div className="header-text">
-            <h1>🏛️ High Priority Cases Dashboard</h1>
+            <h2>🏛️ High Priority Cases Dashboard</h2>
             <p>Real-time monitoring of critical CCMS2 cases</p>
           </div>
-          {isAuthenticated ? (
-            <button 
-              className="btn btn-secondary signout-btn"
-              onClick={handleLogout}
-            >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign Out
-            </button>
-          ) : (
-            <button 
-              className="btn btn-primary login-btn-header"
-              onClick={() => setShowLoginModal(true)}
-            >
-              🔐 Login to View Cases
-            </button>
-          )}
         </div>
       </div>
 
@@ -626,13 +636,15 @@ export default function HighPriorityV2Page(): JSX.Element {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f6fa; min-height: 100vh; color: #333; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .main-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .main-title { font-size: 24px; font-weight: 700; color: #2c3e50; display: inline-flex; align-items: center; gap: 10px; }
+        .main-title i { color: #3498db; }
+        .main-header .lcc-ap-signout-btn { flex-shrink: 0; }
         .header { margin-bottom: 30px; color: #2c3e50; }
         .header-content { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
         .header-text { text-align: center; flex: 1; }
-        .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        .header h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
         .header p { font-size: 15px; opacity: 0.7; color: #6c757d; }
-        .signout-btn { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .signout-btn svg { flex-shrink: 0; }
         .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--accent-color, #007bff), var(--accent-light, #4dabf7)); }
@@ -707,7 +719,6 @@ export default function HighPriorityV2Page(): JSX.Element {
         .form-input:disabled { background: #f8f9fa; cursor: not-allowed; }
         .btn-block { width: 100%; justify-content: center; }
         .login-error { background: #fee; color: #c33; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #fcc; }
-        .login-btn-header { margin-top: 15px; }
         /* Page-scoped font setup for High Priority V2 */
         .hpv2-container, .hpv2-container * { font-family: Arial, 'Helvetica', sans-serif; }
         .hpv2-container h1 { font-size: 24px; font-weight: 700; font-style: normal; }
@@ -718,9 +729,12 @@ export default function HighPriorityV2Page(): JSX.Element {
         .hpv2-container .cases-subtitle, .hpv2-container .caption { font-size: 12px; font-style: italic; }
         @media (max-width: 768px) {
           .container { padding: 15px; }
+          .main-header { flex-direction: column; align-items: stretch; gap: 15px; }
+          .main-title { font-size: 20px; justify-content: center; }
+          .main-header .lcc-ap-signout-btn { width: 100%; justify-content: center; }
           .header-content { flex-direction: column; text-align: center; }
           .header-text { text-align: center; }
-          .header h1 { font-size: 2rem; }
+          .header h2 { font-size: 1.8rem; }
           .stats-container { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
           .stat-number { font-size: 2rem; }
           .case-header { flex-direction: column; align-items: stretch; }

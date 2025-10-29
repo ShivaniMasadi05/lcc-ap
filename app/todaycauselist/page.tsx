@@ -9,6 +9,12 @@ export default function TodaysCauseListPage() {
   const router = useRouter()
 
   useEffect(() => {
+    // Load FontAwesome
+    const link = document.createElement('link')
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+    link.rel = 'stylesheet'
+    document.head.appendChild(link)
+    
     checkAuth()
   }, [])
 
@@ -76,7 +82,9 @@ export default function TodaysCauseListPage() {
       {/* Navigation Bar */}
       <nav className="lcc-ap-navbar">
         <div className="lcc-ap-nav-content">
-          <h1 className="lcc-ap-nav-title">Legal Command Center</h1>
+          <h1 className="lcc-ap-nav-title">
+            <i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)
+          </h1>
           <button
             onClick={handleLogout}
             className="lcc-ap-signout-btn"
@@ -103,13 +111,13 @@ export default function TodaysCauseListPage() {
             <p>Browse through filtered and categorized court cases. Find specific cases based on criteria, case types, or other filtering parameters.</p>
           </div>
 
-          <div className="court-card all-cases" onClick={() => window.open('https://dev2.crimescan.ai/dcl1', '_blank')}>
+          <div className="court-card all-cases" onClick={() => window.open(process.env.NODE_ENV === 'production' ? 'https://lcc-ap.netlify.app/dcl1' :'/dcl1', '_blank')}>
             <div className="card-badge">Live</div>
             <h2>All Court Cases</h2>
             <p>Access the complete list of all court cases scheduled for today. View comprehensive case details, timings, and courtroom assignments.</p>
           </div>
 
-          <div className="court-card case-search" onClick={() => window.open('/case-search', '_blank')}>
+          <div className="court-card case-search" onClick={() => window.open(process.env.NODE_ENV === 'production' ? 'https://lcc-ap.netlify.app/case-search' : '/case-search', '_blank')}>
             <div className="card-badge">Search</div>
             <h2>Case Search</h2>
             <p>Search for specific court cases using various search criteria. Find cases by case number, party names, date range, or other parameters.</p>
