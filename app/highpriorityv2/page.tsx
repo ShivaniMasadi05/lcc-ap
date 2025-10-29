@@ -98,6 +98,12 @@ export default function HighPriorityV2Page(): JSX.Element {
   >("all");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loginError, setLoginError] = useState<string>("");
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   const [isPrayerOpen, setIsPrayerOpen] = useState<boolean>(false);
   const [prayerTitle, setPrayerTitle] = useState<string>("");
@@ -152,6 +158,21 @@ export default function HighPriorityV2Page(): JSX.Element {
   }, []);
 
   const closePrayer = useCallback(() => setIsPrayerOpen(false), []);
+
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/check", {
+        credentials: "include",
+      });
+      const data = await response.json();
+      const authenticated = response.ok && data.message !== "Guest";
+      setIsAuthenticated(authenticated);
+      return authenticated;
+    } catch (err) {
+      setIsAuthenticated(false);
+      return false;
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -223,17 +244,76 @@ export default function HighPriorityV2Page(): JSX.Element {
     }
   }, []);
 
+  const handleLogin = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError("");
+    
+    try {
+      const formData = new URLSearchParams();
+      formData.append("usr", username);
+      formData.append("pwd", password);
+      
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+        credentials: "include",
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.message === "Logged In") {
+        setIsAuthenticated(true);
+        setShowLoginModal(false);
+        setUsername("");
+        setPassword("");
+        fetchData();
+      } else {
+        setLoginError(data.message || "Login failed. Please check your credentials.");
+      }
+    } catch (err) {
+      setLoginError("An error occurred during login. Please try again.");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }, [username, password, fetchData]);
+
   useEffect(() => {
-    fetchData();
-    const id = setInterval(fetchData, 5 * 60 * 1000);
-    return () => clearInterval(id);
-  }, [fetchData]);
+    const init = async () => {
+      const authenticated = await checkAuth();
+      if (authenticated) {
+        fetchData();
+      } else {
+        setIsLoading(false);
+        setError("Please login to view cases");
+      }
+    };
+    init();
+  }, [checkAuth, fetchData]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const id = setInterval(fetchData, 5 * 60 * 1000);
+      return () => clearInterval(id);
+    }
+  }, [isAuthenticated, fetchData]);
 
   return (
     <div className="hpv2-container container">
       <div className="header">
         <h1>🏛️ High Priority Cases Dashboard</h1>
         <p>Real-time monitoring of critical CCMS2 cases</p>
+        {!isAuthenticated && (
+          <button 
+            className="btn btn-primary login-btn-header"
+            onClick={() => setShowLoginModal(true)}
+          >
+            🔐 Login to View Cases
+          </button>
+        )}
       </div>
 
       <div className="stats-container">
@@ -450,6 +530,62 @@ export default function HighPriorityV2Page(): JSX.Element {
         </div>
       )}
 
+      {showLoginModal && (
+        <div className="modal" onClick={(e) => e.currentTarget === e.target && setShowLoginModal(false)}>
+          <div className="modal-content login-modal">
+            <div className="modal-header">
+              <div className="modal-title">🔐 Login Required</div>
+              <span className="close" onClick={() => setShowLoginModal(false)}>&times;</span>
+            </div>
+            <div className="modal-body">
+              <p style={{ marginBottom: 20, color: "#6c757d" }}>
+                Please login with your CCMS2 credentials to view high priority cases
+              </p>
+              <form onSubmit={handleLogin}>
+                <div className="form-group">
+                  <label htmlFor="username">Username</label>
+                  <input
+                    id="username"
+                    type="text"
+                    className="form-input"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    required
+                    disabled={isLoggingIn}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    id="password"
+                    type="password"
+                    className="form-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    disabled={isLoggingIn}
+                  />
+                </div>
+                {loginError && (
+                  <div className="login-error">
+                    ❌ {loginError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-block"
+                  disabled={isLoggingIn}
+                >
+                  {isLoggingIn ? "Logging in..." : "Login"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f6fa; min-height: 100vh; color: #333; }
@@ -523,6 +659,15 @@ export default function HighPriorityV2Page(): JSX.Element {
         .close { font-size: 24px; font-weight: bold; cursor: pointer; color: white; opacity: 0.8; transition: opacity 0.3s ease; }
         .close:hover { opacity: 1; }
         .modal-body { padding: 30px; line-height: 1.6; color: #495057; max-height: 60vh; overflow-y: auto; }
+        .login-modal { max-width: 450px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; font-size: 14px; }
+        .form-input { width: 100%; padding: 12px 16px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 15px; transition: border-color 0.3s ease; font-family: inherit; }
+        .form-input:focus { outline: none; border-color: #3498db; }
+        .form-input:disabled { background: #f8f9fa; cursor: not-allowed; }
+        .btn-block { width: 100%; justify-content: center; }
+        .login-error { background: #fee; color: #c33; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #fcc; }
+        .login-btn-header { margin-top: 15px; }
         /* Page-scoped font setup for High Priority V2 */
         .hpv2-container, .hpv2-container * { font-family: Arial, 'Helvetica', sans-serif; }
         .hpv2-container h1 { font-size: 24px; font-weight: 700; font-style: normal; }
