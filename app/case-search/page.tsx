@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface CaseResult {
   main_case: string
@@ -19,12 +20,33 @@ interface CaseResult {
 }
 
 export default function CaseSearchPage() {
+  const router = useRouter()
   const [caseType, setCaseType] = useState('')
   const [caseNumber, setCaseNumber] = useState('')
   const [caseYear, setCaseYear] = useState('')
   const [results, setResults] = useState<CaseResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include"
+      })
+      
+      if (response.ok) {
+        localStorage.removeItem("lcc_ap_remember")
+        router.push('/')
+      } else {
+        console.error("Logout failed")
+        router.push('/')
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      router.push('/')
+    }
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -97,15 +119,50 @@ export default function CaseSearchPage() {
         color: '#333',
         minHeight: '100vh'
       }}>
-        <h2 style={{
-          textAlign: 'center',
-          marginBottom: '30px',
-          color: '#1a202c',
-          fontSize: '2rem',
-          fontWeight: 'normal'
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '30px'
         }}>
-          🔍 High Court Case Search
-        </h2>
+          <h2 style={{
+            flex: 1,
+            textAlign: 'center',
+            margin: 0,
+            color: '#1a202c',
+            fontSize: '2rem',
+            fontWeight: 'normal'
+          }}>
+            🔍 High Court Case Search
+          </h2>
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 15px',
+              backgroundColor: '#95a5a6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              transition: 'background-color 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#7f8c8d'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#95a5a6'
+            }}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out
+          </button>
+        </div>
 
         <form 
           id="caseForm"
