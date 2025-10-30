@@ -93,7 +93,25 @@ export default function DailyCauseList507Page() {
     margin-right: 15px;
   }
   #refresh-btn {
-    margin-left: 110px;
+    margin-left: 95px;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
+  }
+  #refresh-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+  #clear-filters-btn {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
+  }
+  #clear-filters-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
   }
   .btn-primary {
     background-color: #3498db;
@@ -585,12 +603,15 @@ export default function DailyCauseList507Page() {
 
   /* Add missing case button styling */
   .add-missing-case-btn {
-    background-color: #f39c12;
-    color: white;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
     margin-left: 10px;
   }
   .add-missing-case-btn:hover {
-    background-color: #d35400;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
   }
 
   /* Confirmation dialog styling */
@@ -614,8 +635,9 @@ export default function DailyCauseList507Page() {
   
   /* Home button styling */
   .home-btn {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
     border: none;
     padding: 8px 12px;
     border-radius: 4px;
@@ -627,6 +649,7 @@ export default function DailyCauseList507Page() {
     margin-right: 15px;
   }
   .home-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
     filter: brightness(1.1);
     transform: translateY(-1px);
   }

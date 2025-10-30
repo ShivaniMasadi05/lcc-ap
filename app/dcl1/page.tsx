@@ -97,7 +97,25 @@ export default function DCL1Page() {
     margin-right: 15px;
   }
   #refresh-btn {
-    margin-left: 90px;
+    margin-left: 70px;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
+  }
+  #refresh-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+  #clear-filters-btn {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
+  }
+  #clear-filters-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
   }
   .btn-primary {
     background-color: #3498db;
@@ -558,12 +576,15 @@ export default function DCL1Page() {
 
   /* Add missing case button styling */
   .add-missing-case-btn {
-    background-color: #f39c12;
-    color: white;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
     margin-left: 10px;
   }
   .add-missing-case-btn:hover {
-    background-color: #d35400;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
   }
 
   /* Confirmation dialog styling */
@@ -585,8 +606,9 @@ export default function DCL1Page() {
   
   /* Home button styling */
   .home-btn {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
     border: none;
     padding: 8px 12px;
     border-radius: 4px;
@@ -598,6 +620,7 @@ export default function DCL1Page() {
     margin-right: 15px;
   }
   .home-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
     filter: brightness(1.1);
     transform: translateY(-1px);
   }
@@ -626,9 +649,9 @@ export default function DCL1Page() {
       <button class="btn btn-primary" id="refresh-btn">
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
-      <button class="btn add-missing-case-btn" id="add-missing-case-btn">
-        <i class="fas fa-plus-circle"></i> Add Missing Case
-      </button>
+        <button class="btn add-missing-case-btn" id="add-missing-case-btn">
+          <i class="fas fa-plus-circle"></i><b> Add Missing Case</b>
+        </button>
       <button class="btn btn-secondary" id="signout-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 8px;">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

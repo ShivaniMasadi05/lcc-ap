@@ -721,10 +721,11 @@ body {
   align-items: center;
   justify-content: center;
   padding: 10px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
+  background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+  color: #0b1020;
   border: none;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
