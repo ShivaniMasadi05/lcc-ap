@@ -32,11 +32,12 @@ export default function DailyCauseList507Page() {
   /* Header styles */
   header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     padding: 15px 0;
     margin-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
+    gap: 15px;
   }
   header h1 {
     font-size: 24px;
@@ -44,6 +45,7 @@ export default function DailyCauseList507Page() {
     display: flex;
     align-items: center;
     color: #2c3e50;
+    text-align: left;
   }
   header h1 i {
     margin-right: 10px;
@@ -55,13 +57,13 @@ export default function DailyCauseList507Page() {
   }
   .search-bar {
     position: relative;
-    margin-right: 15px;
+    margin-right: 60px;
   }
   .search-bar input {
     padding: 8px 15px 8px 35px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    width: 300px;
+    width: 785px;
     font-size: 14px;
   }
   .search-bar i {
@@ -86,6 +88,12 @@ export default function DailyCauseList507Page() {
   }
   .btn i {
     margin-right: 8px;
+  }
+  #home-btn {
+    margin-right: 15px;
+  }
+  #refresh-btn {
+    margin-left: 1px;
   }
   .btn-primary {
     background-color: #3498db;
@@ -610,6 +618,9 @@ export default function DailyCauseList507Page() {
   <header>
     <h1><i class="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
     <div class="header-actions">
+      <button class="btn btn-primary" id="home-btn">
+        <i class="fas fa-home"></i> Home
+      </button>
       <div class="search-bar">
         <input type="text" id="search-input" placeholder="Search cases, parties, CNR...">
         <i class="fas fa-search"></i>
@@ -2259,6 +2270,11 @@ document.getElementById('search-input').addEventListener('input', debounce(() =>
 console.log('Search input changed');
 renderCases();
 }, 300));
+
+// Event listener for home button
+document.getElementById('home-btn').addEventListener('click', () => {
+  window.location.href = '/';
+});
 
 // Event listener for refresh button
 document.getElementById('refresh-btn').addEventListener('click', () => {
