@@ -92,201 +92,7 @@ export default function CaseSearchPage() {
   }
 
   return (
-<<<<<<< HEAD
     <>
-      <style jsx>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        @keyframes fadeIn {
-          from { 
-            opacity: 0; 
-            transform: translateY(10px); 
-          }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
-          }
-        }
-        
-        .fade-in-form {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        
-        .fade-in-card {
-          animation: fadeIn 0.4s ease-in-out;
-        }
-      `}</style>
-
-      <div style={{
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        background: '#f0f2f5',
-        padding: '30px',
-        color: '#333',
-        minHeight: '100vh'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '30px'
-        }}>
-          <h2 style={{
-            flex: 1,
-            textAlign: 'center',
-            margin: 0,
-            color: '#1a202c',
-            fontSize: '2rem',
-            fontWeight: 'normal'
-          }}>
-            🔍 High Court Case Search
-          </h2>
-          <button
-            onClick={handleLogout}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 15px',
-              backgroundColor: '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              transition: 'background-color 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#7f8c8d'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#95a5a6'
-            }}
-          >
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign Out
-          </button>
-        </div>
-
-        <form 
-          id="caseForm"
-          onSubmit={handleSubmit}
-          className="fade-in-form"
-          style={{
-            maxWidth: '500px',
-            margin: '0 auto',
-            background: '#fff',
-            padding: '25px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-          }}
-        >
-          <div style={{ marginBottom: '20px' }}>
-            <label 
-              htmlFor="case_type"
-              style={{
-                display: 'block',
-                fontWeight: 600,
-                marginBottom: '6px',
-                color: '#2d3748'
-              }}
-            >
-              Case Type
-            </label>
-            <input
-              type="text"
-              id="case_type"
-              name="case_type"
-              placeholder="e.g., WA"
-              required
-              value={caseType}
-              onChange={(e) => setCaseType(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                fontSize: '16px',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                transition: 'border 0.3s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3182ce'}
-              onBlur={(e) => e.target.style.borderColor = '#ccc'}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label 
-              htmlFor="case_number"
-              style={{
-                display: 'block',
-                fontWeight: 600,
-                marginBottom: '6px',
-                color: '#2d3748'
-              }}
-            >
-              Case Number
-            </label>
-            <input
-              type="text"
-              id="case_number"
-              name="case_number"
-              placeholder="e.g., 1055"
-              required
-              value={caseNumber}
-              onChange={(e) => setCaseNumber(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                fontSize: '16px',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                transition: 'border 0.3s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3182ce'}
-              onBlur={(e) => e.target.style.borderColor = '#ccc'}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label 
-              htmlFor="case_year"
-              style={{
-                display: 'block',
-                fontWeight: 600,
-                marginBottom: '6px',
-                color: '#2d3748'
-              }}
-            >
-              Case Year
-            </label>
-            <input
-              type="text"
-              id="case_year"
-              name="case_year"
-              placeholder="e.g., 2024"
-              required
-              value={caseYear}
-              onChange={(e) => setCaseYear(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                fontSize: '16px',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                transition: 'border 0.3s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3182ce'}
-              onBlur={(e) => e.target.style.borderColor = '#ccc'}
-            />
-          </div>
-
-=======
-    <div className="welcome-page-container bg-gray-50">
       {/* Navigation Bar */}
       <nav className="lcc-ap-navbar">
         <div className="lcc-ap-nav-content">
@@ -306,141 +112,174 @@ export default function CaseSearchPage() {
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="welcome-content-wrapper bg-white text-black" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
-        <div className="welcome-header">
-          <h1>🔍 High Court Case Search</h1>
-          <p>Search for specific court cases using case details</p>
-        </div>
+       {/* Main Content */}
+       <div style={{
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        background: '#f0f2f5',
+        padding: '30px',
+        color: '#333',
+        minHeight: 'calc(100vh - 80px)'
+      }}>
+        <h2 style={{
+          textAlign: 'center',
+          marginBottom: '30px',
+          color: '#1a202c'
+        }}>
+          🔍 High Court Case Search
+        </h2>
 
-        <div style={{ maxWidth: '900px', margin: '0 auto', marginBottom: '40px' }}>
-          <form 
-            onSubmit={handleSubmit}
-            style={{
-              background: '#fff',
-              padding: '35px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-            }}
-          >
-            <div style={{ marginBottom: '20px' }}>
-              <label 
-                htmlFor="case_type"
-                style={{
-                  display: 'block',
-                  fontWeight: 600,
-                  marginBottom: '6px',
-                  color: '#2d3748'
-                }}
-              >
-                Case Type
-              </label>
-              <input
-                type="text"
-                id="case_type"
-                value={caseType}
-                onChange={(e) => setCaseType(e.target.value)}
-                placeholder="e.g., WA"
-                required
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  fontSize: '16px',
-                  border: '1px solid #ccc',
-                  borderRadius: '8px',
-                  transition: 'border 0.3s'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label 
-                htmlFor="case_number"
-                style={{
-                  display: 'block',
-                  fontWeight: 600,
-                  marginBottom: '6px',
-                  color: '#2d3748'
-                }}
-              >
-                Case Number
-              </label>
-              <input
-                type="text"
-                id="case_number"
-                value={caseNumber}
-                onChange={(e) => setCaseNumber(e.target.value)}
-                placeholder="e.g., 1055"
-                required
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  fontSize: '16px',
-                  border: '1px solid #ccc',
-                  borderRadius: '8px',
-                  transition: 'border 0.3s'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label 
-                htmlFor="case_year"
-                style={{
-                  display: 'block',
-                  fontWeight: 600,
-                  marginBottom: '6px',
-                  color: '#2d3748'
-                }}
-              >
-                Case Year
-              </label>
-              <input
-                type="text"
-                id="case_year"
-                value={caseYear}
-                onChange={(e) => setCaseYear(e.target.value)}
-                placeholder="e.g., 2024"
-                required
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  fontSize: '16px',
-                  border: '1px solid #ccc',
-                  borderRadius: '8px',
-                  transition: 'border 0.3s'
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
+        <form 
+          onSubmit={handleSubmit}
+          style={{
+            maxWidth: '500px',
+            margin: '0 auto',
+            background: '#fff',
+            padding: '25px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            animation: 'fadeIn 0.5s ease-in-out'
+          }}
+        >
+          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <label 
+              htmlFor="case_type"
               style={{
-                width: '100%',
-                padding: '16px',
-                fontSize: '16px',
-                backgroundColor: loading ? '#93c5fd' : '#3182ce',
-                color: '#fff',
-                fontWeight: 'bold',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'background 0.3s'
+                display: 'block',
+                fontWeight: 600,
+                marginBottom: '6px',
+                color: '#2d3748',
+                textAlign: 'left'
               }}
             >
-              {loading ? '🔄 Searching...' : 'Search Case'}
-            </button>
-          </form>
-        </div>
+              Case Type
+            </label>
+            <input
+              type="text"
+              id="case_type"
+              value={caseType}
+              onChange={(e) => setCaseType(e.target.value)}
+              placeholder="e.g., WA"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 20px 12px 12px',
+                fontSize: '16px',
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                transition: 'border 0.3s',
+                display: 'block',
+                margin: '0 auto',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
 
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <label 
+              htmlFor="case_number"
+              style={{
+                display: 'block',
+                fontWeight: 600,
+                marginBottom: '6px',
+                color: '#2d3748',
+                textAlign: 'left'
+              }}
+            >
+              Case Number
+            </label>
+            <input
+              type="text"
+              id="case_number"
+              value={caseNumber}
+              onChange={(e) => setCaseNumber(e.target.value)}
+              placeholder="e.g., 1055"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 20px 12px 12px',
+                fontSize: '16px',
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                transition: 'border 0.3s',
+                display: 'block',
+                margin: '0 auto',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <label 
+              htmlFor="case_year"
+              style={{
+                display: 'block',
+                fontWeight: 600,
+                marginBottom: '6px',
+                color: '#2d3748',
+                textAlign: 'left'
+              }}
+            >
+              Case Year
+            </label>
+            <input
+              type="text"
+              id="case_year"
+              value={caseYear}
+              onChange={(e) => setCaseYear(e.target.value)}
+              placeholder="e.g., 2024"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 20px 12px 12px',
+                fontSize: '16px',
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                transition: 'border 0.3s',
+                display: 'block',
+                margin: '0 auto',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '16px',
+              backgroundColor: loading ? '#93c5fd' : '#3182ce',
+              color: '#fff',
+              fontWeight: 'bold',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'background 0.3s'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#2b6cb0'
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = '#3182ce'
+            }}
+          >
+            {loading ? '🔄 Searching...' : 'Search Case'}
+          </button>
+        </form>
+
+        <div style={{
+          marginTop: '40px',
+          maxWidth: '800px',
+          marginLeft: 'auto',
+          marginRight: 'auto'
+        }}>
           {loading && (
-            <p style={{ textAlign: 'center', color: '#6c757d', fontSize: '16px' }}>🔄 Searching case details...</p>
+            <p style={{ textAlign: 'center', color: '#333' }}>🔄 Searching case details...</p>
           )}
 
           {error && (
-            <p style={{ textAlign: 'center', color: '#e53e3e', fontSize: '16px', fontWeight: 500 }}>❌ {error}</p>
+            <p style={{ textAlign: 'center', color: '#e53e3e' }}>❌ {error}</p>
           )}
 
           {results.map((item, index) => (
@@ -448,7 +287,7 @@ export default function CaseSearchPage() {
               key={index}
               style={{
                 background: 'white',
-                padding: '30px',
+                padding: '20px',
                 borderRadius: '12px',
                 boxShadow: '0 3px 8px rgba(0,0,0,0.1)',
                 marginBottom: '25px',
@@ -457,9 +296,7 @@ export default function CaseSearchPage() {
             >
               <h3 style={{
                 color: '#2c5282',
-                marginBottom: '15px',
-                fontSize: '1.25rem',
-                fontWeight: 600
+                marginBottom: '15px'
               }}>
                 {item.main_case}
               </h3>
@@ -503,6 +340,8 @@ export default function CaseSearchPage() {
                     color: '#3182ce',
                     textDecoration: 'none'
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                 >
                   📄 Order PDF
                 </a>
@@ -515,6 +354,8 @@ export default function CaseSearchPage() {
                     color: '#3182ce',
                     textDecoration: 'none'
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                 >
                   📑 Cause List View
                 </a>
@@ -522,12 +363,6 @@ export default function CaseSearchPage() {
             </div>
           ))}
         </div>
-
-        {results.length === 0 && !loading && !error && (
-          <div className="welcome-footer">
-            <p>Enter case details above to search for court cases</p>
-          </div>
-        )}
       </div>
 
       <style jsx>{`
@@ -541,7 +376,12 @@ export default function CaseSearchPage() {
             transform: translateY(0); 
           }
         }
+
+        input:focus {
+          border-color: #3182ce !important;
+          outline: none;
+        }
       `}</style>
-    </div>
+    </>
   )
 }
