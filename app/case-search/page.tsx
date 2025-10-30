@@ -125,17 +125,18 @@ export default function CaseSearchPage() {
        {/* Main Content */}
        <div style={{
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        background: '#f0f2f5',
+        background: 'white',
         padding: '30px',
         color: '#333',
-        minHeight: 'calc(100vh - 80px)'
+        height: 'calc(100vh - 80px)',
+        overflow: 'hidden'
       }}>
         <h2 style={{
           textAlign: 'center',
           marginBottom: '30px',
           color: '#1a202c'
         }}>
-          🔍 High Court Case Search
+         High Court Case Search
         </h2>
 
         <form 
@@ -143,7 +144,7 @@ export default function CaseSearchPage() {
           style={{
             maxWidth: '500px',
             margin: '0 auto',
-            background: '#fff',
+            background: '#f8f9fa',
             padding: '25px',
             borderRadius: '12px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -282,7 +283,9 @@ export default function CaseSearchPage() {
           marginTop: '40px',
           maxWidth: '800px',
           marginLeft: 'auto',
-          marginRight: 'auto'
+          marginRight: 'auto',
+          maxHeight: 'calc(100vh - 400px)',
+          overflowY: 'auto'
         }}>
           {loading && (
             <p style={{ textAlign: 'center', color: '#333' }}>🔄 Searching case details...</p>

@@ -55,6 +55,8 @@ export default function DCL1Page() {
     display: flex;
     align-items: center;
   }
+
+
   .search-bar {
     position: relative;
     margin-right: 60px;
@@ -73,6 +75,8 @@ export default function DCL1Page() {
     transform: translateY(-50%);
     color: #95a5a6;
   }
+
+  
   
   /* Button styles */
   .btn {
@@ -2026,12 +2030,17 @@ export default function DCL1Page() {
  document.getElementById('search-input').addEventListener('input', debounce(() => {
    console.log('Search input changed');
    renderCases();
- }, 300));
+}, 300));
+
+// Event listener for home button
+document.getElementById('home-btn').addEventListener('click', () => {
+  window.location.href = '/todaycauselist';
+});
  
- document.getElementById('refresh-btn').addEventListener('click', () => {
-   console.log('Refresh button clicked');
-   fetchCauseDates();
- });
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  console.log('Refresh button clicked');
+  fetchCauseDates();
+});
 
  document.getElementById('home-btn').addEventListener('click', () => {
    window.location.href = '/todaycauselist';

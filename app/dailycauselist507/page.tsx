@@ -188,7 +188,7 @@ export default function DailyCauseList507Page() {
     gap: 10px;
   }
   .date-range-info i {
-    margin-right: 8px;
+    margin-right: 1px;
     color: #3498db;
   }
   .case-count {
