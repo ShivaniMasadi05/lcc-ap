@@ -101,6 +101,17 @@ export default function DailyCauseList507Page() {
   .btn-secondary:hover {
     background-color: #7f8c8d;
   }
+  #signout-btn {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    font-weight: 600;
+    margin-left: 15px;
+  }
+  #signout-btn:hover {
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
   .btn-success {
     background-color: #2ecc71;
     color: white;
@@ -610,7 +621,10 @@ export default function DailyCauseList507Page() {
         <i class="fas fa-plus-circle"></i> Add Missing Case
       </button>
       <button class="btn btn-secondary" id="signout-btn">
-        <i class="fas fa-sign-out-alt"></i> Sign Out
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 8px;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Sign Out
       </button>
     </div>
   </header>
