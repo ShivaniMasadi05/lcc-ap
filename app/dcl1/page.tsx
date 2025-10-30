@@ -32,17 +32,20 @@ export default function DCL1Page() {
   /* Header styles */
   header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     padding: 15px 0;
     margin-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
+    gap: 15px;
   }
   header h1 {
     font-size: 24px;
+    font-weight: bold;
     display: flex;
     align-items: center;
     color: #2c3e50;
+    text-align: left;
   }
   header h1 i {
     margin-right: 10px;
@@ -54,13 +57,13 @@ export default function DCL1Page() {
   }
   .search-bar {
     position: relative;
-    margin-right: 15px;
+    margin-right: 60px;
   }
   .search-bar input {
     padding: 8px 15px 8px 35px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    width: 300px;
+    width: 795px;
     font-size: 14px;
   }
   .search-bar i {
@@ -85,6 +88,12 @@ export default function DCL1Page() {
   }
   .btn i {
     margin-right: 8px;
+  }
+  #home-btn {
+    margin-right: 15px;
+  }
+  #refresh-btn {
+    margin-left: 90px;
   }
   .btn-primary {
     background-color: #3498db;
@@ -569,12 +578,42 @@ export default function DCL1Page() {
     color: #856404;
     margin-bottom: 15px;
   }
+  
+  /* Home button styling */
+  .home-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-right: 15px;
+  }
+  .home-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+  .home-btn svg {
+    width: 20px;
+    height: 20px;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <h1><i class="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+    <div style="display: flex; align-items: center;">
+      <button class="home-btn" id="home-btn" title="Home">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </button>
+      <h1><i class="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+    </div>
     <div class="header-actions">
       <div class="search-bar">
         <input type="text" id="search-input" placeholder="Search cases, parties, CNR...">
@@ -1992,6 +2031,10 @@ export default function DCL1Page() {
  document.getElementById('refresh-btn').addEventListener('click', () => {
    console.log('Refresh button clicked');
    fetchCauseDates();
+ });
+
+ document.getElementById('home-btn').addEventListener('click', () => {
+   window.location.href = '/todaycauselist';
  });
 
  document.getElementById('signout-btn').addEventListener('click', async () => {

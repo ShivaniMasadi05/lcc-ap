@@ -712,6 +712,28 @@ body {
   transform: translateY(0);
 }
 
+.lcc-ap-home-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lcc-ap-home-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.lcc-ap-home-btn:active {
+  transform: translateY(0);
+}
+
 .lcc-ap-welcome-content {
   display: flex;
   flex-direction: column;

@@ -332,7 +332,18 @@ export default function HighPriorityV2Page(): JSX.Element {
   return (
     <div className="hpv2-container container">
       <div className="main-header">
-        <h1 className="main-title"><i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button 
+            className="lcc-ap-home-btn"
+            onClick={() => router.push('/todaycauselist')}
+            title="Home"
+          >
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </button>
+          <h1 className="main-title"><i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+        </div>
         {isAuthenticated ? (
           <button 
             className="lcc-ap-signout-btn"

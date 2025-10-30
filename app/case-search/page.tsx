@@ -96,10 +96,18 @@ export default function CaseSearchPage() {
       {/* Navigation Bar */}
       <nav className="lcc-ap-navbar">
         <div className="lcc-ap-nav-content">
+          <button
+            onClick={() => router.push('/todaycauselist')}
+            className="lcc-ap-home-btn"
+            title="Home"
+          >
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </button>
           <h1 className="lcc-ap-nav-title">
             <i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)
           </h1>
->>>>>>> 67025f0c73c2691ef11a6873f927eda7187c4f81
           <button
             onClick={handleLogout}
             className="lcc-ap-signout-btn"

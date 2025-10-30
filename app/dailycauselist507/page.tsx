@@ -93,7 +93,7 @@ export default function DailyCauseList507Page() {
     margin-right: 15px;
   }
   #refresh-btn {
-    margin-left: 1px;
+    margin-left: 110px;
   }
   .btn-primary {
     background-color: #3498db;
@@ -611,16 +611,43 @@ export default function DailyCauseList507Page() {
     color: #856404;
     margin-bottom: 15px;
   }
+  
+  /* Home button styling */
+  .home-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-right: 15px;
+  }
+  .home-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+  .home-btn svg {
+    width: 20px;
+    height: 20px;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <h1><i class="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
-    <div class="header-actions">
-      <button class="btn btn-primary" id="home-btn">
-        <i class="fas fa-home"></i> Home
+    <div style="display: flex; align-items: center;">
+      <button class="home-btn" id="home-btn" title="Home">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
       </button>
+      <h1><i class="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+    </div>
+    <div class="header-actions">
       <div class="search-bar">
         <input type="text" id="search-input" placeholder="Search cases, parties, CNR...">
         <i class="fas fa-search"></i>
@@ -2273,7 +2300,7 @@ renderCases();
 
 // Event listener for home button
 document.getElementById('home-btn').addEventListener('click', () => {
-  window.location.href = '/';
+  window.location.href = '/todaycauselist';
 });
 
 // Event listener for refresh button
