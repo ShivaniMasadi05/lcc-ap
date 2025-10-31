@@ -27,6 +27,7 @@ export default function CaseSearchPage() {
   const [results, setResults] = useState<CaseResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     // Load FontAwesome
@@ -35,6 +36,23 @@ export default function CaseSearchPage() {
     link.rel = 'stylesheet'
     document.head.appendChild(link)
   }, [])
+
+  useEffect(() => {
+    // Handle ESC key to close modal
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showModal) {
+        setShowModal(false)
+      }
+    }
+
+    if (showModal) {
+      document.addEventListener('keydown', handleEsc)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }, [showModal])
 
   const handleLogout = async () => {
     try {
@@ -81,8 +99,11 @@ export default function CaseSearchPage() {
       
       if (!data || data.length === 0) {
         setError('No case found.')
+        setShowModal(false)
       } else {
         setResults(data)
+        setError('')
+        setShowModal(true)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while searching')
@@ -279,103 +300,185 @@ export default function CaseSearchPage() {
           </button>
         </form>
 
-        <div style={{
-          marginTop: '40px',
-          maxWidth: '800px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          maxHeight: 'calc(100vh - 400px)',
-          overflowY: 'auto'
-        }}>
-          {loading && (
-            <p style={{ textAlign: 'center', color: '#333' }}>🔄 Searching case details...</p>
-          )}
+        {/* Error message display */}
+        {error && !showModal && (
+          <div style={{
+            marginTop: '20px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#e53e3e', fontSize: '16px' }}>❌ {error}</p>
+          </div>
+        )}
 
-          {error && (
-            <p style={{ textAlign: 'center', color: '#e53e3e' }}>❌ {error}</p>
-          )}
-
-          {results.map((item, index) => (
+        {/* Modal Popup */}
+        {showModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+              animation: 'fadeIn 0.3s ease-in-out'
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowModal(false)
+              }
+            }}
+          >
             <div
-              key={index}
               style={{
                 background: 'white',
-                padding: '20px',
                 borderRadius: '12px',
-                boxShadow: '0 3px 8px rgba(0,0,0,0.1)',
-                marginBottom: '25px',
-                animation: 'fadeIn 0.4s ease-in-out'
+                padding: '30px',
+                maxWidth: '900px',
+                width: '90%',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                position: 'relative',
+                animation: 'slideUp 0.3s ease-in-out'
               }}
             >
-              <h3 style={{
-                color: '#2c5282',
-                marginBottom: '15px'
+              {/* Modal Header */}
+              <div style={{
+                marginBottom: '20px',
+                paddingBottom: '15px',
+                borderBottom: '2px solid #e2e8f0'
               }}>
-                {item.main_case}
-              </h3>
-              
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Status:</strong> {item.case_status}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Stage:</strong> {item.case_stage}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>District:</strong> {item.district}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Next Hearing:</strong> {item.next_hearing_date || 'N/A'}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Court:</strong> {item.court_no}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Petitioners:</strong> {item.pet_name?.join(', ') || 'N/A'}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Respondents:</strong> {item.res_name?.join(', ') || 'N/A'}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Petitioner Advocate:</strong> {item.pet_adv || 'N/A'}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Respondent Advocate:</strong> {item.res_adv || 'N/A'}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <strong>Prayer:</strong> {item.prayer || 'N/A'}
-              </p>
-              <p style={{ margin: '6px 0', lineHeight: '1.5' }}>
-                <a 
-                  href={item.order_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                <h2 style={{
+                  color: '#2c5282',
+                  margin: 0,
+                  fontSize: '24px'
+                }}>
+                  Results
+                </h2>
+              </div>
+
+              {/* Modal Content */}
+              <div>
+                {results.map((item, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      background: '#f8f9fa',
+                      padding: '20px',
+                      borderRadius: '12px',
+                      marginBottom: '20px',
+                      border: '1px solid #e2e8f0',
+                      animation: 'fadeIn 0.4s ease-in-out'
+                    }}
+                  >
+                    <h3 style={{
+                      color: '#2c5282',
+                      marginBottom: '15px',
+                      fontSize: '20px'
+                    }}>
+                      {item.main_case}
+                    </h3>
+                    
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Status:</strong> {item.case_status}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Stage:</strong> {item.case_stage}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>District:</strong> {item.district}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Next Hearing:</strong> {item.next_hearing_date || 'N/A'}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Court:</strong> {item.court_no}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Petitioners:</strong> {item.pet_name?.join(', ') || 'N/A'}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Respondents:</strong> {item.res_name?.join(', ') || 'N/A'}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Petitioner Advocate:</strong> {item.pet_adv || 'N/A'}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Respondent Advocate:</strong> {item.res_adv || 'N/A'}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <strong>Prayer:</strong> {item.prayer || 'N/A'}
+                    </p>
+                    <p style={{ margin: '8px 0', lineHeight: '1.6', fontSize: '15px' }}>
+                      <a 
+                        href={item.order_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#3182ce',
+                          textDecoration: 'none',
+                          fontWeight: 500
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                      >
+                        📄 Order PDF
+                      </a>
+                      {' | '}
+                      <a 
+                        href={item.s3_html_link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#3182ce',
+                          textDecoration: 'none',
+                          fontWeight: 500
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                      >
+                        📑 Cause List View
+                      </a>
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Modal Footer */}
+              <div style={{
+                marginTop: '20px',
+                paddingTop: '15px',
+                borderTop: '2px solid #e2e8f0',
+                textAlign: 'right'
+              }}>
+                <button
+                  onClick={() => setShowModal(false)}
                   style={{
-                    color: '#3182ce',
-                    textDecoration: 'none'
+                    padding: '10px 24px',
+                    fontSize: '16px',
+                    backgroundColor: '#3182ce',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'background 0.3s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                >
-                  📄 Order PDF
-                </a>
-                {' | '}
-                <a 
-                  href={item.s3_html_link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#3182ce',
-                    textDecoration: 'none'
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2b6cb0'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#3182ce'
+                  }}
                 >
-                  📑 Cause List View
-                </a>
-              </p>
+                  Close
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       <style jsx>{`
@@ -387,6 +490,17 @@ export default function CaseSearchPage() {
           to { 
             opacity: 1; 
             transform: translateY(0); 
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
 
