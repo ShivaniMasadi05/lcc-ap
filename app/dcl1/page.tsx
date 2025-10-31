@@ -1,6 +1,22 @@
 'use client'
 
+import { useEffect } from 'react'
+
 export default function DCL1Page() {
+  useEffect(() => {
+    // Set title immediately when component mounts
+    document.title = 'dcl1'
+    
+    // Keep title set even if something tries to change it
+    const interval = setInterval(() => {
+      if (document.title !== 'dcl1') {
+        document.title = 'dcl1'
+      }
+    }, 100)
+    
+    return () => clearInterval(interval)
+  }, [])
+  
   return (
     <div dangerouslySetInnerHTML={{ __html: `
 <!DOCTYPE html>
@@ -937,12 +953,13 @@ export default function DCL1Page() {
    lastWeek: []
  };
  
- window.onload = function() {
-   console.log('Initializing application...');
-   renderTabs();
-   renderEmptyLoading();
-   
-   document.getElementById('missing-cause-list-date').value = causeDates.today;
+window.onload = function() {
+  console.log('Initializing application...');
+  document.title = 'dcl1';
+  renderTabs();
+  renderEmptyLoading();
+  
+  document.getElementById('missing-cause-list-date').value = causeDates.today;
    
    document.getElementById('priority-filter').addEventListener('change', function() {
      console.log('Priority filter changed to:', this.value);

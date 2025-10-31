@@ -30,6 +30,9 @@ export default function CaseSearchPage() {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
+    // Set page title
+    document.title = 'case search'
+    
     // Load FontAwesome
     const link = document.createElement('link')
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
@@ -92,21 +95,47 @@ export default function CaseSearchPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to fetch case details')
+        setError('Record not found')
+        setLoading(false)
+        return
       }
 
-      const data: CaseResult[] = await response.json()
+      // Check if response has content
+      const contentType = response.headers.get('content-type')
+      const responseText = await response.text()
       
-      if (!data || data.length === 0) {
-        setError('No case found.')
+      // If response is empty or not JSON, show record not found
+      if (!responseText || responseText.trim() === '' || !contentType?.includes('application/json')) {
+        setError('Record not found')
+        setShowModal(false)
+        setLoading(false)
+        return
+      }
+
+      // Try to parse JSON
+      let data: CaseResult[]
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        // If JSON parsing fails, show user-friendly message
+        setError('Record not found')
+        setShowModal(false)
+        setLoading(false)
+        return
+      }
+      
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        setError('Record not found')
         setShowModal(false)
       } else {
-        setResults(data)
+        setResults(Array.isArray(data) ? data : [data])
         setError('')
         setShowModal(true)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while searching')
+      // Show user-friendly message instead of technical error
+      setError('Record not found')
+      setShowModal(false)
     } finally {
       setLoading(false)
     }
