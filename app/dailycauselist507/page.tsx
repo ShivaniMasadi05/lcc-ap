@@ -1,6 +1,22 @@
 'use client'
 
+import { useEffect } from 'react'
+
 export default function DailyCauseList507Page() {
+  useEffect(() => {
+    // Set title immediately when component mounts
+    document.title = 'dailycauselist507'
+    
+    // Keep title set even if something tries to change it
+    const interval = setInterval(() => {
+      if (document.title !== 'dailycauselist507') {
+        document.title = 'dailycauselist507'
+      }
+    }, 100)
+    
+    return () => clearInterval(interval)
+  }, [])
+  
   return (
     <div dangerouslySetInnerHTML={{ __html: `
 <!DOCTYPE html>
@@ -8,7 +24,7 @@ export default function DailyCauseList507Page() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Legal Case Management System</title>
+<title>dailycauselist507</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
   /* Reset and base styles */
@@ -995,6 +1011,42 @@ export default function DailyCauseList507Page() {
 </div>
 
 <script>
+// Set title immediately to prevent Next.js from overriding it
+(function() {
+  document.title = 'dailycauselist507';
+  
+  // Set title on DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      document.title = 'dailycauselist507';
+    });
+  }
+  
+  // Ensure title stays set even if it gets changed
+  var titleObserver = new MutationObserver(function(mutations) {
+    if (document.title !== 'dailycauselist507') {
+      document.title = 'dailycauselist507';
+    }
+  });
+  
+  // Start observing when document.head is available
+  if (document.head) {
+    titleObserver.observe(document.head, {
+      childList: true,
+      subtree: true
+    });
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.head) {
+        titleObserver.observe(document.head, {
+          childList: true,
+          subtree: true
+        });
+      }
+    });
+  }
+})();
+
 let currentDocname = '';
 let allCases = [];
 let filteredCases = [];
@@ -1006,6 +1058,7 @@ let availableDates = []; // Will store all available cause list dates
 // Initialize the application
 window.onload = function() {
  console.log('Initializing application...');
+ document.title = 'dailycauselist507';
  
  // Set up date range navigation
  initializeDateRange();
