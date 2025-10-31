@@ -650,7 +650,7 @@ export default function DCL1Page() {
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
         <button class="btn add-missing-case-btn" id="add-missing-case-btn">
-          <i class="fas fa-plus-circle"></i><b> Add Missing Case</b>
+          <i class="fas fa-plus-circle"></i> Add Missing Case 
         </button>
       <button class="btn btn-secondary" id="signout-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 8px;">
