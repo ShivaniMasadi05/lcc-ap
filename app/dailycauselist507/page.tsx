@@ -136,6 +136,27 @@ export default function DailyCauseList507Page() {
   .btn-primary:hover {
     background-color: #2980b9;
   }
+  .clear-filters-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #2196f3;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  .clear-filters-btn:hover {
+    background-color: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
   .btn-secondary {
     background-color: #95a5a6;
     color: white;
@@ -1841,9 +1862,6 @@ if (casesToDisplay.length === 0) {
       <i class="fas fa-search"></i>
       <h3>No Cases Found</h3>
       <p>No cases match your current filter criteria for the selected date range.</p>
-      <button class="btn btn-primary" onclick="clearFilters()">
-        <i class="fas fa-times-circle"></i> Clear Filters
-      </button>
     </div>
   \`;
   return;
@@ -1968,7 +1986,7 @@ sortedCases.forEach((caseDoc, index) => {
       \${orderLink}
     </td>
     <td>
-      <button class="btn btn-danger btn-sm" onclick="setHighPriority('\${caseDoc.name}')">
+      <button class="btn btn-danger btn-sm" onclick="setHighPriority('\${caseDoc.name}')" style="margin-bottom: 10px;">
         <i class="fas fa-exclamation-circle"></i> High Priority
       </button>
       <br>

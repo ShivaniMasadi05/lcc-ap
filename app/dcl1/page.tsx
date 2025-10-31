@@ -1607,9 +1607,6 @@ window.onload = function() {
          <i class="fas fa-search"></i>
          <h3>No Cases Found</h3>
          <p>No cases match your current filter criteria.</p>
-         <button class="btn btn-primary" onclick="clearFilters()">
-           <i class="fas fa-times-circle"></i> Clear Filters
-         </button>
        </div>
      \`;
      return;
@@ -1713,7 +1710,7 @@ window.onload = function() {
          \${orderLink}
        </td>
        <td>
-         <button class="btn btn-danger btn-sm" onclick="setHighPriority('\${caseDoc.name}')">
+         <button class="btn btn-danger btn-sm" onclick="setHighPriority('\${caseDoc.name}')" style="margin-bottom: 10px;">
            <i class="fas fa-exclamation-circle"></i> High Priority
          </button>
          <br>
