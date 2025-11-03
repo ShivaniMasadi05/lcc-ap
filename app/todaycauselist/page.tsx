@@ -103,7 +103,7 @@ export default function TodaysCauseListPage() {
       {/* Main Content */}
       <div className="welcome-content-wrapper bg-white text-black">
         <div className="welcome-header">
-          <h1>Today&apos;s Cause List</h1>
+          <h1>Cause List</h1>
           <p>Access court case information and filtered listings</p>
         </div>
 
@@ -136,6 +136,13 @@ export default function TodaysCauseListPage() {
             <div className="card-badge">VC Links</div>
             <h2>High Court VC Meeting Links</h2>
             <p>Access virtual court meeting links for the High Court. Join scheduled video conferencing sessions for today&apos;s hearings.</p>
+          </div>
+         
+
+          <div className="court-card keywords-config" onClick={() => window.open('http://13.233.165.90/lcc_v2/config', '_blank')}>
+            <div className="card-badge">Config</div>
+            <h2>Keywords Configuration</h2>
+            <p>configure your keywords here</p>
           </div>
         </div>
 
