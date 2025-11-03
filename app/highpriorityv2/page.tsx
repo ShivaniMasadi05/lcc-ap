@@ -370,7 +370,7 @@ export default function HighPriorityV2Page(): JSX.Element {
       <div className="header">
         <div className="header-content">
           <div className="header-text">
-            <h2>🏛️ High Priority Cases Dashboard</h2>
+            <h2> High Priority Cases Dashboard</h2>
             <p>Real-time monitoring of critical CCMS2 cases</p>
           </div>
         </div>
@@ -663,12 +663,12 @@ export default function HighPriorityV2Page(): JSX.Element {
         .stat-card { background: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--accent-color, #007bff), var(--accent-light, #4dabf7)); }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 16px 48px rgba(0,0,0,0.15); }
-        .stat-card.active { background: #495057; color: white; transform: translateY(-3px); }
-        .stat-card.overdue { --accent-color: #e74c3c; --accent-light: #ec7063; }
-        .stat-card.today { --accent-color: #27ae60; --accent-light: #58d68d; }
-        .stat-card.tomorrow { --accent-color: #f39c12; --accent-light: #f7dc6f; }
-        .stat-card.upcoming { --accent-color: #3498db; --accent-light: #7fb3d3; }
-        .stat-card.total { --accent-color: #8e44ad; --accent-light: #bb8fce; }
+        .stat-card.active { background: #3498db; ; color: white; transform: translateY(-3px); }
+        .stat-card.overdue { --accent-color:  #3498db;  --accent-light: #3498db;  }
+        .stat-card.today { --accent-color:  #3498db;  --accent-light: #3498db; }
+        .stat-card.tomorrow { --accent-color:  #3498db;  --accent-light: #3498db;  }
+        .stat-card.upcoming { --accent-color: #3498db; --accent-light:  #3498db;  }
+        .stat-card.total { --accent-color:  #3498db;  --accent-light:  #3498db; }
         .stat-number { font-size: 2.5rem; font-weight: 700; margin-bottom: 8px; color: var(--accent-color, #007bff); }
         .stat-card.active .stat-number { color: white; }
         .stat-label { font-size: 0.9rem; font-weight: 500; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -683,9 +683,9 @@ export default function HighPriorityV2Page(): JSX.Element {
         .case-card:last-child { border-bottom: none; }
         .case-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--status-color, #007bff); opacity: 0; transition: opacity 0.3s ease; }
         .case-card:hover::before { opacity: 1; }
-        .case-card.overdue { --status-color: #e74c3c; background: rgba(231, 76, 60, 0.05); }
-        .case-card.today { --status-color: #27ae60; background: rgba(39, 174, 96, 0.05); }
-        .case-card.tomorrow { --status-color: #f39c12; background: rgba(243, 156, 18, 0.05); }
+        .case-card.overdue { --status-color: #3498db;; background: rgba(248, 245, 245, 0.05); }
+        .case-card.today { --status-color: #3498db; background: rgba(39, 174, 96, 0.05); }
+        .case-card.tomorrow { --status-color: #3498db; background: rgba(243, 156, 18, 0.05); }
         .case-card.upcoming { --status-color: #3498db; }
         .case-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 15px; }
         .case-info { flex: 1; min-width: 250px; }
@@ -695,7 +695,7 @@ export default function HighPriorityV2Page(): JSX.Element {
         .meta-icon { font-size: 0.9rem; }
         .case-status { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
-        .status-priority { background: #e74c3c; color: white; }
+        .status-priority { background: #3498db; color: white; }
         .status-stage { background: #e9ecef; color: #495057; }
         .status-repeat { background: #d5f4e6; color: #27ae60; }
         .status-hearing { background: var(--status-color, #007bff); color: white; font-weight: 600; }
@@ -708,9 +708,9 @@ export default function HighPriorityV2Page(): JSX.Element {
         .btn { padding: 8px 16px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .btn-primary { background: #3498db; color: white; }
-        .btn-success { background: #27ae60; color: white; }
-        .btn-warning { background: #f39c12; color: white; }
-        .btn-danger { background: #e74c3c; color: white; }
+        .btn-success { background: #3498db; color: white; }
+        .btn-warning { background: #3498db; color: white; }
+        .btn-danger { background: #3498db; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
         .loading, .no-cases { text-align: center; padding: 60px 20px; color: #6c757d; }
         .loading { font-size: 1.1rem; }
