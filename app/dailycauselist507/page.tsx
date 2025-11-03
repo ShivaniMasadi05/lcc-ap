@@ -326,9 +326,17 @@ export default function DailyCauseList507Page() {
     border-radius: 5px;
   }
   
+  /* Cases Container - stable height to prevent layout shifts */
+  #case-container {
+    min-height: 400px;
+    transition: min-height 0.3s ease;
+    position: relative;
+  }
+
   /* Table styling */
   .table-responsive {
     overflow-x: auto;
+    min-height: 300px;
   }
   table {
     width: 100%;
@@ -693,6 +701,81 @@ export default function DailyCauseList507Page() {
   .home-btn svg {
     width: 20px;
     height: 20px;
+  }
+
+  /* Pagination styles */
+  .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pagination-info {
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: 500;
+  }
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    color: #2c3e50;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-width: 40px;
+    text-align: center;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+  }
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pagination-btn.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+    font-weight: bold;
+  }
+  .pagination-input {
+    width: 60px;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+  }
+  .pagination-input:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+
+  /* Lazy loading placeholder */
+  .lazy-load-placeholder {
+    height: 50px;
+    background-color: #f5f7fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+    font-style: italic;
   }
 </style>
 </head>
@@ -1076,6 +1159,11 @@ let startDate = new Date().toISOString().split('T')[0]; // Default to today
 let endDate = new Date().toISOString().split('T')[0]; // Default to today
 let availableDates = []; // Will store all available cause list dates
 
+// Pagination state
+let currentPage = 1;
+const recordsPerPage = 10;
+let totalFilteredCases = 0;
+
 // Initialize the application
 window.onload = function() {
  console.log('Initializing application...');
@@ -1263,12 +1351,34 @@ function updateRangeDisplay() {
 
 function renderEmptyLoading() {
  console.log('Rendering loading state...');
- document.getElementById('case-container').innerHTML = \`
-   <div class="loading">
-     <div class="loading-spinner"></div>
-     <p>Loading cases, please wait...</p>
-   </div>
+ const container = document.getElementById('case-container');
+ 
+ // Create a stable loading skeleton that maintains height
+ container.innerHTML = \`
+  <div class="loading" style="min-height: 600px;">
+    <div class="loading-spinner"></div>
+    <p id="loading-status" style="color: #3498db; font-weight: 500;">Loading cases, please wait...</p>
+    <div id="loading-progress" style="margin-top: 15px; color: #3498db; font-size: 14px; font-weight: 500;"></div>
+  </div>
  \`;
+}
+
+// Update loading progress without re-rendering table
+function updateLoadingProgress(current, total, message) {
+ const progressEl = document.getElementById('loading-progress');
+ const statusEl = document.getElementById('loading-status');
+ 
+ if (progressEl) {
+   // User-friendly progress message with blue color
+   progressEl.textContent = message || \`Loading cases (\${current} of \${total} loaded...)\`;
+   progressEl.style.color = '#3498db';
+   progressEl.style.fontWeight = '500';
+ }
+ if (statusEl && current === total) {
+   statusEl.textContent = 'Finalizing data...';
+   statusEl.style.color = '#3498db';
+   statusEl.style.fontWeight = '500';
+ }
 }
 
 function inNext7Days(dateStr) {
@@ -1361,20 +1471,22 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
    allCases = relevantCases;
    filteredCases = allCases;
    
-   // Update range display with case count
+  // Update range display with case count (without re-rendering table)
    updateRangeDisplay();
-   
-   // Render initial view with basic data
-   populateFilterOptions();
-   renderCases();
    
    // Fetch full details in batches for better performance
    let processedCount = 0;
    const batchSize = 5;
+  const totalCases = relevantCases.length;
+ 
+  // Show initial progress
+  updateLoadingProgress(0, totalCases, 'Starting to load cases...');
   
   for (let i = 0; i < relevantCases.length; i += batchSize) {
     const batch = relevantCases.slice(i, i + batchSize);
-    console.log(\`Fetching details for batch \${i/batchSize + 1} (\${batch.length} cases)\`);
+    const batchNumber = Math.floor(i / batchSize) + 1;
+    const totalBatches = Math.ceil(relevantCases.length / batchSize);
+    console.log(\`Fetching details for batch \${batchNumber}/\${totalBatches} (\${batch.length} cases)\`);
     
     // Fetch full details for this batch
     const batchDetails = await Promise.all(
@@ -1383,7 +1495,11 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
           .then(r => r.json())
           .then(d => {
             processedCount++;
-            console.log(\`Fetched details for case \${processedCount}/\${relevantCases.length}\`);
+            // Update progress without re-rendering - user-friendly message
+            if (processedCount % 10 === 0 || processedCount === totalCases) {
+              updateLoadingProgress(processedCount, totalCases, \`Loading cases (\${processedCount} of \${totalCases} loaded...)\`);
+            }
+            console.log(\`Fetched details for case \${processedCount}/\${totalCases}\`);
             return d.data;
           })
       )
@@ -1402,17 +1518,30 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
       }
     });
     
-    // Update filteredCases to include all cases
+    // Update filteredCases but DON'T render yet
     filteredCases = allCases;
-    
-    // Update UI after each batch
-    console.log(\`Updated UI with \${processedCount} detailed cases\`);
-    updateRangeDisplay();
-    populateFilterOptions();
-    renderCases();
   }
   
+  // Update progress to show processing
+  updateLoadingProgress(totalCases, totalCases, \`Loading cases (\${totalCases} of \${totalCases} loaded...)\`);
+  
   console.log('All case details fetched successfully');
+  
+  // Now render everything ONCE after all data is loaded
+  // This prevents multiple re-renders and page shaking
+    populateFilterOptions();
+  
+  // Render immediately after data load (no debounce needed for initial render)
+  // Clear any pending debounced renders first
+  if (renderTimeout) {
+    clearTimeout(renderTimeout);
+    renderTimeout = null;
+  }
+  isRendering = false;
+  renderCases();
+  
+  // Update range display one final time
+  updateRangeDisplay();
 } catch (error) {
   console.error('Error loading cases:', error);
   document.getElementById('case-container').innerHTML = \`
@@ -1727,10 +1856,33 @@ filters.forEach(id => {
 applyFilters();
 }
 
+// Debounce render to prevent rapid re-renders
+let renderTimeout = null;
+let isRendering = false;
+
 // Function to apply all active filters
 function applyFilters() {
 console.log('Applying filters...');
+
+// Reset pagination to page 1 when filters change (not when just navigating pages)
+currentPage = 1;
+
+// Clear any pending render
+if (renderTimeout) {
+  clearTimeout(renderTimeout);
+}
+
+// Debounce render to batch rapid filter changes
+renderTimeout = setTimeout(() => {
+  if (!isRendering) {
+    isRendering = true;
+    // Use requestAnimationFrame for smoother rendering
+    requestAnimationFrame(() => {
 renderCases();
+      isRendering = false;
+    });
+  }
+}, 150); // 150ms debounce
 }
 
 function renderCases() {
@@ -1855,6 +2007,13 @@ displayActiveFilters(casesToDisplay);
 // Update the filter options after applying filters
 populateFilterOptions();
 
+// Store filtered cases globally for pagination
+filteredCases = casesToDisplay;
+totalFilteredCases = casesToDisplay.length;
+
+// Note: Don't reset currentPage here - it should only be reset when filters actually change
+// This allows pagination to work properly when navigating between pages
+
 // Show empty state if no cases
 if (casesToDisplay.length === 0) {
     container.innerHTML = \`
@@ -1867,15 +2026,22 @@ if (casesToDisplay.length === 0) {
   return;
 }
 
-// Render table view (only option now)
+// Render table view (only option now) with pagination
 renderTableView(casesToDisplay, container);
 }
 
 function renderTableView(cases, container) {
 console.log(\`Rendering \${cases.length} cases in table view\`);
 
+// Prevent layout shift by maintaining container structure
+const containerEl = document.getElementById('case-container');
+if (containerEl) {
+  // Preserve minimum height during render
+  containerEl.style.minHeight = containerEl.offsetHeight > 400 ? containerEl.offsetHeight + 'px' : '400px';
+}
+
 // Sort cases by cause list date first, then by court number, then by item number
-const sortedCases = cases.sort((a, b) => {
+const sortedCases = [...cases].sort((a, b) => {
   // First sort by cause list date
   const dateA = a.cause_list_date || '';
   const dateB = b.cause_list_date || '';
@@ -1900,6 +2066,14 @@ const sortedCases = cases.sort((a, b) => {
   return itemA - itemB;
 });
 
+// Calculate pagination
+const totalPages = Math.ceil(sortedCases.length / recordsPerPage);
+const startIndex = (currentPage - 1) * recordsPerPage;
+const endIndex = startIndex + recordsPerPage;
+const paginatedCases = sortedCases.slice(startIndex, endIndex);
+
+console.log(\`Showing page \${currentPage} of \${totalPages}: records \${startIndex + 1} to \${Math.min(endIndex, sortedCases.length)} of \${sortedCases.length}\`);
+
 container.innerHTML = \`
   <div class="table-responsive">
     <table>
@@ -1917,11 +2091,22 @@ container.innerHTML = \`
       <tbody id="cases-table-body"></tbody>
     </table>
   </div>
+  <div id="pagination-container"></div>
 \`;
 
 const tableBody = document.getElementById('cases-table-body');
 
-sortedCases.forEach((caseDoc, index) => {
+// Clear previous rows
+tableBody.innerHTML = '';
+
+// Render cases with lazy loading (progressive rendering for smooth UI)
+paginatedCases.forEach((caseDoc, localIndex) => {
+  const globalIndex = startIndex + localIndex;
+  
+  // Use setTimeout for progressive rendering - first 3 immediately, rest with slight delay
+  const renderDelay = localIndex < 3 ? 0 : (localIndex - 3) * 10;
+  
+  setTimeout(() => {
   const tr = document.createElement('tr');
   
   // Create View link if s3_html_link exists
@@ -1957,7 +2142,7 @@ sortedCases.forEach((caseDoc, index) => {
   const mainNumberDisplay = caseDoc.main_number ? \` | Main #: \${caseDoc.main_number}\` : '';
   
   tr.innerHTML = \`
-    <td class="serial-column">\${index + 1}</td>
+      <td class="serial-column">\${globalIndex + 1}</td>
     <td>\${caseDoc.item_no || 'N/A'}</td>
     <td>
       <strong>\${caseDoc.case_type || 'Unnamed Case'}</strong> \${viewLink}
@@ -1996,7 +2181,136 @@ sortedCases.forEach((caseDoc, index) => {
     </td>
   \`;
   tableBody.appendChild(tr);
+    
+    // Render pagination controls after last row
+    if (localIndex === paginatedCases.length - 1) {
+      setTimeout(() => {
+        renderPaginationControls(totalPages, sortedCases.length, startIndex, endIndex);
+      }, 100);
+    }
+  }, renderDelay);
 });
+
+// If no cases, render pagination immediately
+if (paginatedCases.length === 0) {
+  renderPaginationControls(totalPages, sortedCases.length, startIndex, endIndex);
+}
+
+// Reset container min-height after render completes to allow natural sizing
+setTimeout(() => {
+  if (containerEl) {
+    containerEl.style.minHeight = '';
+  }
+}, 100);
+}
+
+// Function to render pagination controls
+function renderPaginationControls(totalPages, totalCases, startIndex, endIndex) {
+const paginationContainer = document.getElementById('pagination-container');
+if (!paginationContainer) return;
+
+if (totalPages <= 1) {
+  paginationContainer.innerHTML = \`
+    <div class="pagination-info">
+      Showing all \${totalCases} cases
+    </div>
+  \`;
+  return;
+}
+
+// Calculate which page numbers to show
+let startPage = Math.max(1, currentPage - 2);
+let endPage = Math.min(totalPages, currentPage + 2);
+
+// Adjust if we're near the beginning or end
+if (currentPage <= 3) {
+  endPage = Math.min(5, totalPages);
+}
+if (currentPage >= totalPages - 2) {
+  startPage = Math.max(1, totalPages - 4);
+}
+
+const pageButtons = [];
+for (let i = startPage; i <= endPage; i++) {
+  pageButtons.push(i);
+}
+
+paginationContainer.innerHTML = \`
+  <div class="pagination-info">
+    Showing \${startIndex + 1} to \${Math.min(endIndex, totalCases)} of \${totalCases} cases (Page \${currentPage} of \${totalPages})
+  </div>
+  <div class="pagination-controls">
+    <button class="pagination-btn" onclick="goToPage(1)" \${currentPage === 1 ? 'disabled' : ''}>
+      <i class="fas fa-angle-double-left"></i>
+    </button>
+    <button class="pagination-btn" onclick="goToPage(\${currentPage - 1})" \${currentPage === 1 ? 'disabled' : ''}>
+      <i class="fas fa-angle-left"></i> Prev
+    </button>
+    \${startPage > 1 ? \`<button class="pagination-btn" onclick="goToPage(1)">1</button>\${startPage > 2 ? '<span>...</span>' : ''}\` : ''}
+    \${pageButtons.map(page => \`
+      <button class="pagination-btn \${page === currentPage ? 'active' : ''}" onclick="goToPage(\${page})">
+        \${page}
+      </button>
+    \`).join('')}
+    \${endPage < totalPages ? \`\${endPage < totalPages - 1 ? '<span>...</span>' : ''}<button class="pagination-btn" onclick="goToPage(\${totalPages})">\${totalPages}</button>\` : ''}
+    <button class="pagination-btn" onclick="goToPage(\${currentPage + 1})" \${currentPage === totalPages ? 'disabled' : ''}>
+      Next <i class="fas fa-angle-right"></i>
+    </button>
+    <button class="pagination-btn" onclick="goToPage(\${totalPages})" \${currentPage === totalPages ? 'disabled' : ''}>
+      <i class="fas fa-angle-double-right"></i>
+    </button>
+    <span style="margin-left: 10px;">Go to:</span>
+    <input type="number" class="pagination-input" id="page-input" min="1" max="\${totalPages}" value="\${currentPage}" 
+           onkeypress="if(event.key==='Enter') goToPageInput()">
+    <button class="pagination-btn" onclick="goToPageInput()">Go</button>
+  </div>
+\`;
+}
+
+// Function to navigate to a specific page
+function goToPage(page) {
+const totalPages = Math.ceil(totalFilteredCases / recordsPerPage);
+if (page < 1 || page > totalPages) return;
+
+console.log(\`Navigating to page \${page} of \${totalPages}\`);
+currentPage = page;
+
+// Clear any pending debounced renders
+if (renderTimeout) {
+  clearTimeout(renderTimeout);
+  renderTimeout = null;
+}
+isRendering = false;
+
+// Re-render with the new page (without resetting pagination)
+renderCases();
+
+// Scroll to top of table
+const container = document.getElementById('case-container');
+if (container) {
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+}
+
+// Function to handle page input navigation
+function goToPageInput() {
+const pageInput = document.getElementById('page-input');
+if (!pageInput) return;
+
+const page = parseInt(pageInput.value);
+if (isNaN(page) || page < 1) {
+  showNotification('Please enter a valid page number', 'error');
+  return;
+}
+
+const totalPages = Math.ceil(totalFilteredCases / recordsPerPage);
+if (page > totalPages) {
+  showNotification(\`Page number cannot exceed \${totalPages}\`, 'error');
+  pageInput.value = currentPage;
+  return;
+}
+
+goToPage(page);
 }
 
 // Function to open prayer modal - prevent default behavior and page jumping
@@ -2467,3 +2781,4 @@ return function() {
     ` }} />
   )
 }
+
