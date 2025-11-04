@@ -113,7 +113,7 @@ export default function DCL1Page() {
     margin-right: 15px;
   }
   #refresh-btn {
-    margin-left: 70px;
+    margin-left: 270px;
     background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
     color: #0b1020;
     font-weight: 600;
@@ -747,7 +747,7 @@ export default function DCL1Page() {
       <button class="btn btn-primary" id="refresh-btn">
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
-        <button class="btn add-missing-case-btn" id="add-missing-case-btn">
+        <button class="btn add-missing-case-btn" id="add-missing-case-btn" style="display: none;">
           <i class="fas fa-plus-circle"></i> Add Missing Case 
         </button>
       <button class="btn btn-secondary" id="signout-btn">
@@ -1028,10 +1028,20 @@ export default function DCL1Page() {
  let currentViewMode = 'table';
  let activeTab = 'today_cause_list';
 
- // Pagination state
- let currentPage = 1;
- const recordsPerPage = 10;
- let totalFilteredCases = 0;
+// Pagination state - server-side pagination
+let currentPage = 1;
+const recordsPerPage = 10;
+let totalFilteredCases = 0;
+let totalCasesInRange = 0; // Total cases available for current tab/date range (from server)
+let fetchedPages = new Set(); // Track which pages have been fetched: { 1, 2, 3, ... }
+let pageDataCache = {}; // Cache data for each page: { 1: [...cases], 2: [...cases], etc. }
+let currentTabCache = {}; // Track current tab for pagination: { tabName, dates: [...] }
+let tabCounts = { // Store counts for each tab
+  'previous_cause_list': 0,
+  'today_cause_list': 0,
+  'next_cause_list': 0,
+  'last_week_cause_list': 0
+};
  
  let causeDates = {
    previous: null,
@@ -1178,7 +1188,10 @@ function updateLoadingProgress(current, total, message) {
      
      console.log('Cause list dates:', causeDates);
      
-     fetchCasesForActiveTab();
+     // Fetch counts for all tabs before loading active tab data
+     fetchAllTabCounts();
+     
+     fetchCasesForActiveTab(1);
    } catch (error) {
      console.error('Error fetching cause list dates:', error);
      document.getElementById('case-container').innerHTML = \`
@@ -1194,9 +1207,97 @@ function updateLoadingProgress(current, total, message) {
    }
  }
  
- async function fetchCasesForActiveTab() {
-   console.log(\`Fetching cases for \${activeTab}...\`);
-   renderEmptyLoading();
+// Fetch counts for all tabs to display in tab buttons
+async function fetchAllTabCounts() {
+  console.log('Fetching counts for all tabs...');
+  
+  try {
+    const countPromises = [];
+    
+    // Previous Cause List count
+    if (causeDates.previous) {
+      const previousFilter = \`[["cause_list_date","=","\${causeDates.previous}"]]\`;
+      countPromises.push(
+        fetch(\`/api/resource/CCMS3?filters=\${encodeURIComponent(previousFilter)}&limit=0\`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(data => {
+            const relevant = (data.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+            tabCounts['previous_cause_list'] = relevant.length;
+            console.log(\`Previous Cause List count: \${relevant.length}\`);
+          })
+          .catch(err => {
+            console.warn('Error fetching previous count:', err);
+            tabCounts['previous_cause_list'] = 0;
+          })
+      );
+    }
+    
+    // Today's Cause List count
+    const todayFilter = \`[["cause_list_date","=","\${causeDates.today}"]]\`;
+    countPromises.push(
+      fetch(\`/api/resource/CCMS3?filters=\${encodeURIComponent(todayFilter)}&limit=0\`, { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          const relevant = (data.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+          tabCounts['today_cause_list'] = relevant.length;
+          console.log(\`Today's Cause List count: \${relevant.length}\`);
+        })
+        .catch(err => {
+          console.warn('Error fetching today count:', err);
+          tabCounts['today_cause_list'] = 0;
+        })
+    );
+    
+    // Next Cause List count
+    if (causeDates.next) {
+      const nextFilter = \`[["cause_list_date","=","\${causeDates.next}"]]\`;
+      countPromises.push(
+        fetch(\`/api/resource/CCMS3?filters=\${encodeURIComponent(nextFilter)}&limit=0\`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(data => {
+            const relevant = (data.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+            tabCounts['next_cause_list'] = relevant.length;
+            console.log(\`Next Cause List count: \${relevant.length}\`);
+          })
+          .catch(err => {
+            console.warn('Error fetching next count:', err);
+            tabCounts['next_cause_list'] = 0;
+          })
+      );
+    }
+    
+    // Last Week's Cause List count
+    if (causeDates.lastWeek.length > 0) {
+      const lastWeekFilter = \`[["cause_list_date","in",\${JSON.stringify(causeDates.lastWeek)}]]\`;
+      countPromises.push(
+        fetch(\`/api/resource/CCMS3?filters=\${encodeURIComponent(lastWeekFilter)}&limit=0\`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(data => {
+            const relevant = (data.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+            tabCounts['last_week_cause_list'] = relevant.length;
+            console.log(\`Last Week's Cause List count: \${relevant.length}\`);
+          })
+          .catch(err => {
+            console.warn('Error fetching last week count:', err);
+            tabCounts['last_week_cause_list'] = 0;
+          })
+      );
+    }
+    
+    // Wait for all counts to be fetched
+    await Promise.all(countPromises);
+    
+    // Update tabs with new counts
+    renderTabs();
+    
+    console.log('All tab counts fetched:', tabCounts);
+  } catch (error) {
+    console.error('Error fetching tab counts:', error);
+  }
+}
+
+ async function fetchCasesForActiveTab(page = 1) {
+   console.log(\`Fetching cases for \${activeTab}, page \${page}...\`);
    
    try {
      let targetDates = [];
@@ -1214,6 +1315,7 @@ function updateLoadingProgress(current, total, message) {
      if (targetDates.length === 0) {
        allCases = [];
        filteredCases = [];
+       totalCasesInRange = 0;
        renderTabs();
        document.getElementById('case-container').innerHTML = \`
          <div class="empty-state">
@@ -1225,92 +1327,147 @@ function updateLoadingProgress(current, total, message) {
        return;
      }
      
-     console.log(\`Fetching cases for dates:\`, targetDates);
-     
-     let allRelevantCases = [];
-     
-     for (const targetDate of targetDates) {
-       const res = await fetch(\`/api/resource/CCMS3?filters=[["cause_list_date","=","\${targetDate}"]]&limit=0\`);
-       const data = await res.json();
-       
-       const relevantCases = data.data.filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
-       allRelevantCases = allRelevantCases.concat(relevantCases);
+     // Check if tab changed - if so, reset pagination cache
+     const tabKey = JSON.stringify({ tab: activeTab, dates: targetDates });
+     if (JSON.stringify(currentTabCache) !== tabKey) {
+       console.log('Tab or dates changed, resetting pagination cache');
+       fetchedPages.clear();
+       pageDataCache = {};
+       allCases = [];
+       filteredCases = [];
+       currentPage = 1;
+       currentTabCache = { tab: activeTab, dates: targetDates };
      }
      
-     console.log(\`Found \${allRelevantCases.length} cases for selected date range\`);
+     // Check if this page is already cached
+     if (fetchedPages.has(page) && pageDataCache[page]) {
+       console.log(\`Page \${page} already cached, using cached data\`);
+       // Reconstruct allCases from cached pages
+       allCases = [];
+       Object.keys(pageDataCache).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pageNum => {
+         allCases = allCases.concat(pageDataCache[pageNum]);
+       });
+       filteredCases = allCases;
+       renderCases();
+       renderTabs();
+       return;
+     }
      
-     allCases = allRelevantCases;
+     renderEmptyLoading();
+     
+     console.log(\`Fetching page \${page} from API for dates:\`, targetDates);
+     
+     // Build filter for all target dates - use "in" operator if multiple dates, otherwise use "="
+     let filtersJson;
+     if (targetDates.length === 1) {
+       filtersJson = \`[["cause_list_date","=","\${targetDates[0]}"]]\`;
+     } else {
+       // For multiple dates, use OR condition or "in" operator
+       // Frappe supports ["field", "in", [value1, value2, ...]]
+       filtersJson = \`[["cause_list_date","in",\${JSON.stringify(targetDates)}]]\`;
+     }
+     
+     // Calculate pagination offset
+     const limitStart = (page - 1) * recordsPerPage;
+     
+     // Fetch only the current page from API (server-side pagination)
+     const apiUrl = \`/api/resource/CCMS3?filters=\${encodeURIComponent(filtersJson)}&limit=\${recordsPerPage}&limit_start=\${limitStart}\`;
+     const res = await fetch(apiUrl, { cache: 'no-store' });
+     const data = await res.json();
+     
+     // Filter out cases marked as not relevant
+     const relevantCases = (data.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+     
+     console.log(\`Fetched \${relevantCases.length} cases for page \${page} (offset: \${limitStart})\`);
+     
+     // Fetch full details for this page only
+     let processedCount = 0;
+     const totalCases = relevantCases.length;
+
+     // Show initial progress
+     updateLoadingProgress(0, totalCases, \`Loading page \${page}...\`);
+     
+     // Fetch full details for all cases in this page
+     const pageDetails = await Promise.all(
+       relevantCases.map(doc =>
+         fetch(\`/api/resource/CCMS3/\${doc.name}\`, { cache: 'no-store' })
+           .then(r => r.json())
+           .then(d => {
+            processedCount++;
+            // Update progress
+            if (processedCount % 5 === 0 || processedCount === totalCases) {
+              updateLoadingProgress(processedCount, totalCases, \`Loading page \${page} (\${processedCount} of \${totalCases} cases...)\`);
+            }
+            return d.data;
+          })
+       )
+     );
+     
+     // Filter out not relevant cases from details
+     const fullCases = pageDetails.filter(d => (d.relevancy || '').toLowerCase() !== 'not relevant');
+     
+     // Store this page's data in cache
+     pageDataCache[page] = fullCases;
+     fetchedPages.add(page);
+     
+     // Update allCases - combine with previous pages if needed
+     allCases = [];
+     Object.keys(pageDataCache).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pageNum => {
+       allCases = allCases.concat(pageDataCache[pageNum]);
+     });
+     
      filteredCases = allCases;
      
-    renderTabs();
-    
-    // Don't render cases yet - wait until all batches are loaded
-    // This prevents multiple re-renders and page shaking
-    
-    let processedCount = 0;
-    const batchSize = 10;
-    const totalCases = allRelevantCases.length;
-
-    // Show initial progress
-    updateLoadingProgress(0, totalCases, 'Starting to load cases...');
-   
-    for (let i = 0; i < allRelevantCases.length; i += batchSize) {
-      const batch = allRelevantCases.slice(i, i + batchSize);
-      const batchNumber = Math.floor(i / batchSize) + 1;
-      const totalBatches = Math.ceil(allRelevantCases.length / batchSize);
-      console.log(\`Fetching details for batch \${batchNumber}/\${totalBatches} (\${batch.length} cases)\`);
-      
-      const batchDetails = await Promise.all(
-        batch.map(doc =>
-          fetch(\`/api/resource/CCMS3/\${doc.name}\`)
-            .then(r => r.json())
-            .then(d => {
-              processedCount++;
-              // Update progress without re-rendering - user-friendly message
-              if (processedCount % 10 === 0 || processedCount === totalCases) {
-                updateLoadingProgress(processedCount, totalCases, \`Loading cases (\${processedCount} of \${totalCases} loaded...)\`);
-              }
-              console.log(\`Fetched details for case \${processedCount}/\${totalCases}\`);
-              return d.data;
-            })
-        )
-      );
-      
-      const fullCases = batchDetails.filter(d => (d.relevancy || '').toLowerCase() !== 'not relevant');
-      
-      fullCases.forEach(fullCase => {
-        const index = allCases.findIndex(c => c.name === fullCase.name);
-        if (index !== -1) {
-          allCases[index] = fullCase;
-        } else {
-          allCases.push(fullCase);
-        }
-      });
-      
-      // Update filteredCases but DON'T render yet
-      filteredCases = allCases;
-    }
-    
-    // Update progress to show processing
-    updateLoadingProgress(totalCases, totalCases, \`Loading cases (\${totalCases} of \${totalCases} loaded...)\`);
-    
-    console.log('All case details fetched successfully');
-    
-    // Now render everything ONCE after all data is loaded
-    // This prevents multiple re-renders and page shaking
-    populateFilterOptions();
-    
-    // Render immediately after data load (no debounce needed for initial render)
-    // Clear any pending debounced renders first
-    if (renderTimeout) {
-      clearTimeout(renderTimeout);
-      renderTimeout = null;
-    }
-    isRendering = false;
-    renderCases();
-    
-    // Update tabs one final time
-    renderTabs();
+     // Fetch accurate total count when loading page 1
+     if (page === 1) {
+       try {
+         // Fetch total count by making a query with limit=0
+         const countUrl = \`/api/resource/CCMS3?filters=\${encodeURIComponent(filtersJson)}&limit=0\`;
+         const countRes = await fetch(countUrl, { cache: 'no-store' });
+         const countData = await countRes.json();
+         
+         // Filter out not relevant cases
+         const allRelevantInRange = (countData.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+         totalCasesInRange = allRelevantInRange.length;
+         console.log(\`Fetched accurate total count: \${totalCasesInRange} cases in date range\`);
+       } catch (countError) {
+         console.warn('Could not fetch total count, using estimate:', countError);
+         // Fallback to estimation if count query fails
+         if (fullCases.length === recordsPerPage) {
+           totalCasesInRange = recordsPerPage + 1;
+         } else {
+           totalCasesInRange = fullCases.length;
+         }
+       }
+     }
+     
+     // Update estimate if we encounter a partial page (last page)
+     if (fullCases.length < recordsPerPage) {
+       // This is the last page, update total to be accurate
+       totalCasesInRange = limitStart + fullCases.length;
+       console.log(\`Updated total count to \${totalCasesInRange} (found last page)\`);
+     }
+     
+     console.log(\`Page \${page} loaded successfully. Total cases in range: \${totalCasesInRange}\`);
+     
+     // Update the count for the current tab in tabCounts
+     if (activeTab && tabCounts.hasOwnProperty(activeTab)) {
+       tabCounts[activeTab] = totalCasesInRange;
+     }
+     
+     // Now render the current page
+     populateFilterOptions();
+     
+     // Render immediately after data load
+     if (renderTimeout) {
+       clearTimeout(renderTimeout);
+       renderTimeout = null;
+     }
+     isRendering = false;
+     renderCases();
+     
+     // Update tabs one final time with accurate counts
+     renderTabs();
    } catch (error) {
      console.error('Error loading cases:', error);
      document.getElementById('case-container').innerHTML = \`
@@ -1318,7 +1475,7 @@ function updateLoadingProgress(current, total, message) {
          <i class="fas fa-exclamation-triangle"></i>
          <h3>Error Loading Cases</h3>
          <p>There was a problem fetching case data. Please try again.</p>
-         <button class="btn btn-primary" onclick="fetchCasesForActiveTab()">
+         <button class="btn btn-primary" onclick="fetchCasesForActiveTab(1)">
            <i class="fas fa-sync-alt"></i> Retry
          </button>
        </div>
@@ -1329,10 +1486,11 @@ function updateLoadingProgress(current, total, message) {
  function renderTabs() {
    console.log('Rendering tabs with counts...');
    
-   const previousCount = causeDates.previous ? allCases.filter(d => d.cause_list_date === causeDates.previous).length : 0;
-   const todayCount = allCases.filter(d => d.cause_list_date === causeDates.today).length;
-   const nextCount = causeDates.next ? allCases.filter(d => d.cause_list_date === causeDates.next).length : 0;
-   const lastWeekCount = causeDates.lastWeek.length > 0 ? allCases.filter(d => causeDates.lastWeek.includes(d.cause_list_date)).length : 0;
+   // Use tabCounts which contains counts for all tabs (fetched upfront)
+   const previousCount = tabCounts['previous_cause_list'] || 0;
+   const todayCount = tabCounts['today_cause_list'] || 0;
+   const nextCount = tabCounts['next_cause_list'] || 0;
+   const lastWeekCount = tabCounts['last_week_cause_list'] || 0;
    
    const previousDateText = causeDates.previous ? \` (\${causeDates.previous})\` : '';
    const nextDateText = causeDates.next ? \` (\${causeDates.next})\` : '';
@@ -1367,9 +1525,21 @@ function updateLoadingProgress(current, total, message) {
    
    renderTabs();
    
-   fetchCasesForActiveTab();
+   fetchCasesForActiveTab(1);
  }
  
+// Helper function to check if any filters are active
+function hasActiveFilters() {
+  return !!(document.getElementById('priority-filter')?.value ||
+    document.getElementById('case-age-filter')?.value ||
+    document.getElementById('case-category-filter')?.value ||
+    document.getElementById('case-type-filter')?.value ||
+    document.getElementById('case-stage-filter')?.value ||
+    document.getElementById('match-keyword-filter')?.value ||
+    document.getElementById('court-no-filter')?.value ||
+    (document.getElementById('search-input')?.value || '').trim());
+}
+
  function displayActiveFilters(casesToDisplay) {
    const activeFiltersContainer = document.getElementById('active-filters');
    const activeFilterTags = document.getElementById('active-filter-tags');
@@ -1820,12 +1990,40 @@ function applyFilters() {
    });
 
    // Calculate pagination
-   const totalPages = Math.ceil(sortedCases.length / recordsPerPage);
+   // Determine which total to use: filtered count if filters are active, otherwise use server total
+   const filtersActive = hasActiveFilters();
+   
+   // Use filtered count if filters are active, otherwise use server total
+   const totalAvailableCases = filtersActive ? sortedCases.length : (totalCasesInRange > 0 ? totalCasesInRange : sortedCases.length);
+   const totalPages = Math.ceil(totalAvailableCases / recordsPerPage);
    const startIndex = (currentPage - 1) * recordsPerPage;
    const endIndex = startIndex + recordsPerPage;
-   const paginatedCases = sortedCases.slice(startIndex, endIndex);
+   
+   // For server-side pagination: use current page's cached data directly
+   let paginatedCases;
+   if (totalCasesInRange > 0 && sortedCases.length < totalAvailableCases && pageDataCache[currentPage]) {
+     // Server-side pagination: use current page's cached data
+     paginatedCases = pageDataCache[currentPage];
+     // Sort the page data
+     paginatedCases = [...paginatedCases].sort((a, b) => {
+       const dateA = a.cause_list_date || '';
+       const dateB = b.cause_list_date || '';
+       const dateComparison = dateA.localeCompare(dateB);
+       if (dateComparison !== 0) return dateComparison;
+       const courtA = a.court_no || '';
+       const courtB = b.court_no || '';
+       const courtComparison = courtA.localeCompare(courtB);
+       if (courtComparison !== 0) return courtComparison;
+       const itemA = parseInt(a.item_no) || 0;
+       const itemB = parseInt(b.item_no) || 0;
+       return itemA - itemB;
+     });
+   } else {
+     // Client-side pagination or all data loaded: slice from sorted data
+     paginatedCases = sortedCases.slice(startIndex, endIndex);
+   }
 
-   console.log(\`Showing page \${currentPage} of \${totalPages}: records \${startIndex + 1} to \${Math.min(endIndex, sortedCases.length)} of \${sortedCases.length}\`);
+   console.log(\`Showing page \${currentPage} of \${totalPages}: records \${startIndex + 1} to \${Math.min(endIndex, totalAvailableCases)} of \${totalAvailableCases} (loaded: \${sortedCases.length})\`);
 
    container.innerHTML = \`
      <div class="table-responsive">
@@ -1930,7 +2128,7 @@ function applyFilters() {
      // Render pagination controls after last row
      if (localIndex === paginatedCases.length - 1) {
        setTimeout(() => {
-         renderPaginationControls(totalPages, sortedCases.length, startIndex, endIndex);
+         renderPaginationControls(totalPages, totalAvailableCases, startIndex, endIndex);
        }, 100);
      }
    }, renderDelay);
@@ -1938,7 +2136,7 @@ function applyFilters() {
 
  // If no cases, render pagination immediately
  if (paginatedCases.length === 0) {
-   renderPaginationControls(totalPages, sortedCases.length, startIndex, endIndex);
+   renderPaginationControls(totalPages, totalAvailableCases, startIndex, endIndex);
  }
 
  // Reset container min-height after render completes to allow natural sizing
@@ -2013,8 +2211,13 @@ function renderPaginationControls(totalPages, totalCases, startIndex, endIndex) 
 }
 
 // Function to navigate to a specific page
-function goToPage(page) {
-  const totalPages = Math.ceil(totalFilteredCases / recordsPerPage);
+async function goToPage(page) {
+  // Determine total based on whether filters are active
+  const filtersActive = hasActiveFilters();
+  
+  // Use filtered count if filters are active, otherwise use server total
+  const totalAvailable = filtersActive ? totalFilteredCases : (totalCasesInRange > 0 ? totalCasesInRange : filteredCases.length);
+  const totalPages = Math.ceil(totalAvailable / recordsPerPage);
   if (page < 1 || page > totalPages) return;
 
   console.log(\`Navigating to page \${page} of \${totalPages}\`);
@@ -2027,8 +2230,21 @@ function goToPage(page) {
   }
   isRendering = false;
 
-  // Re-render with the new page (without resetting pagination)
-  renderCases();
+  // If this page is already cached, just render it
+  if (fetchedPages.has(page) && pageDataCache[page]) {
+    console.log(\`Page \${page} is cached, rendering from cache\`);
+    renderCases();
+    // Scroll to top of table
+    const container = document.getElementById('case-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    return;
+  }
+
+  // Fetch this page from API
+  console.log(\`Fetching page \${page} from API...\`);
+  await fetchCasesForActiveTab(page);
 
   // Scroll to top of table
   const container = document.getElementById('case-container');
@@ -2048,7 +2264,12 @@ function goToPageInput() {
     return;
   }
 
-  const totalPages = Math.ceil(totalFilteredCases / recordsPerPage);
+  // Determine total based on whether filters are active
+  const filtersActive = hasActiveFilters();
+  
+  const totalAvailable = filtersActive ? totalFilteredCases : (totalCasesInRange > 0 ? totalCasesInRange : filteredCases.length);
+  const totalPages = Math.ceil(totalAvailable / recordsPerPage);
+
   if (page > totalPages) {
     showNotification(\`Page number cannot exceed \${totalPages}\`, 'error');
     pageInput.value = currentPage;
@@ -2411,6 +2632,13 @@ document.getElementById('home-btn').addEventListener('click', () => {
  
 document.getElementById('refresh-btn').addEventListener('click', () => {
   console.log('Refresh button clicked');
+  // Reset tab counts before refreshing
+  tabCounts = {
+    'previous_cause_list': 0,
+    'today_cause_list': 0,
+    'next_cause_list': 0,
+    'last_week_cause_list': 0
+  };
   fetchCauseDates();
 });
 

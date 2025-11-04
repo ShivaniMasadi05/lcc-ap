@@ -109,7 +109,7 @@ export default function DailyCauseList507Page() {
     margin-right: 15px;
   }
   #refresh-btn {
-    margin-left: 95px;
+    margin-left: 275px;
     background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
     color: #0b1020;
     font-weight: 600;
@@ -798,7 +798,7 @@ export default function DailyCauseList507Page() {
       <button class="btn btn-primary" id="refresh-btn">
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
-      <button class="btn add-missing-case-btn" id="add-missing-case-btn">
+      <button class="btn add-missing-case-btn" id="add-missing-case-btn" style="display: none;">
         <i class="fas fa-plus-circle"></i> Add Missing Case
       </button>
       <button class="btn btn-secondary" id="signout-btn">
@@ -1159,10 +1159,19 @@ let startDate = new Date().toISOString().split('T')[0]; // Default to today
 let endDate = new Date().toISOString().split('T')[0]; // Default to today
 let availableDates = []; // Will store all available cause list dates
 
-// Pagination state
+// Tab state management for lazy loading
+let activeTab = null; // 'today', 'this-week', 'this-month', or null
+let loadedTabs = new Set(); // Track which tabs have been loaded to avoid reloading
+let tabDataCache = {}; // Cache data for each tab: { 'today': [...cases], 'this-week': [...cases], etc. }
+
+// Pagination state - server-side pagination
 let currentPage = 1;
 const recordsPerPage = 10;
 let totalFilteredCases = 0;
+let totalCasesInRange = 0; // Total cases available for current date range (from server)
+let fetchedPages = new Set(); // Track which pages have been fetched: { 1, 2, 3, ... }
+let pageDataCache = {}; // Cache data for each page: { 1: [...cases], 2: [...cases], etc. }
+let currentDateRange = { start: null, end: null }; // Track current date range for pagination
 
 // Initialize the application
 window.onload = function() {
@@ -1172,8 +1181,8 @@ window.onload = function() {
  // Set up date range navigation
  initializeDateRange();
  
- // Render initial empty state
- renderEmptyLoading();
+ // Render initial empty state (don't load data yet - wait for tab click)
+ renderInitialState();
  
  // Set today's date as default in the missing case form
  document.getElementById('missing-cause-list-date').value = startDate;
@@ -1235,8 +1244,10 @@ window.onload = function() {
    showMissingCaseConfirmation();
  });
  
- // First fetch the available cause list dates to optimize loading
- fetchAvailableDates();
+ // Don't auto-load data - wait for user to click a tab
+ // This improves initial page load performance
+ // Auto-select 'Today' tab and load its data
+ activateTab('today');
 };
 
 function initializeDateRange() {
@@ -1254,7 +1265,7 @@ function initializeDateRange() {
  endDateInput.value = endDate;
  updateRangeDisplay();
  
- // Apply range button
+ // Apply range button - custom date selection (not a main tab)
  applyRangeBtn.addEventListener('click', function() {
    const newStartDate = startDateInput.value;
    const newEndDate = endDateInput.value;
@@ -1271,63 +1282,62 @@ function initializeDateRange() {
    
    startDate = newStartDate;
    endDate = newEndDate;
+   // Clear active tab since this is a custom selection
+   activeTab = null;
+   updateTabStyles(null);
    updateRangeDisplay();
-   fetchCasesForDateRange(startDate, endDate);
+   currentPage = 1; // Reset to page 1 for new date range
+   fetchCasesForDateRange(startDate, endDate, null, 1);
  });
  
- // Today button
+ // Today button - use tab activation for lazy loading
  todayBtn.addEventListener('click', function() {
-   const today = new Date().toISOString().split('T')[0];
-   setDateRange(today, today);
+   activateTab('today');
  });
  
- // Yesterday button
+ // Yesterday button - custom date selection (not a main tab)
  yesterdayBtn.addEventListener('click', function() {
    const yesterday = new Date();
    yesterday.setDate(yesterday.getDate() - 1);
    const yesterdayStr = yesterday.toISOString().split('T')[0];
+   // Clear active tab since this is a custom selection
+   activeTab = null;
+   updateTabStyles(null);
    setDateRange(yesterdayStr, yesterdayStr);
  });
  
- // This week button
+ // This week button - use tab activation for lazy loading
  thisWeekBtn.addEventListener('click', function() {
-   const today = new Date();
-   const monday = new Date(today);
-   monday.setDate(today.getDate() - today.getDay() + 1);
-   const sunday = new Date(monday);
-   sunday.setDate(monday.getDate() + 6);
-   
-   setDateRange(monday.toISOString().split('T')[0], sunday.toISOString().split('T')[0]);
+   activateTab('this-week');
  });
  
- // Last week button
+ // Last week button - custom date selection (not a main tab)
  lastWeekBtn.addEventListener('click', function() {
    const today = new Date();
    const lastMonday = new Date(today);
    lastMonday.setDate(today.getDate() - today.getDay() - 6);
    const lastSunday = new Date(lastMonday);
    lastSunday.setDate(lastMonday.getDate() + 6);
-   
+   // Clear active tab since this is a custom selection
+   activeTab = null;
+   updateTabStyles(null);
    setDateRange(lastMonday.toISOString().split('T')[0], lastSunday.toISOString().split('T')[0]);
  });
  
- // This month button
+ // This month button - use tab activation for lazy loading
  thisMonthBtn.addEventListener('click', function() {
-   const today = new Date();
-   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-   
-   setDateRange(firstDay.toISOString().split('T')[0], lastDay.toISOString().split('T')[0]);
+   activateTab('this-month');
  });
 }
 
-function setDateRange(start, end) {
+ function setDateRange(start, end) {
  startDate = start;
  endDate = end;
  document.getElementById('start-date').value = start;
  document.getElementById('end-date').value = end;
  updateRangeDisplay();
- fetchCasesForDateRange(startDate, endDate);
+ currentPage = 1; // Reset to page 1 for new date range
+ fetchCasesForDateRange(startDate, endDate, null, 1);
 }
 
 function updateRangeDisplay() {
@@ -1344,9 +1354,30 @@ function updateRangeDisplay() {
    rangeDisplay.textContent = \`\${startDate} to \${endDate}\`;
  }
  
- // Update case count
- const casesInRange = allCases.filter(c => c.cause_list_date >= startDate && c.cause_list_date <= endDate);
- document.getElementById('case-count').textContent = \`\${casesInRange.length} cases\`;
+ // Update case count - use accurate total from server if available
+ const caseCountEl = document.getElementById('case-count');
+ if (totalCasesInRange > 0) {
+   // Use the accurate total count from server
+   caseCountEl.textContent = \`\${totalCasesInRange} cases\`;
+ } else {
+   // Fallback to loaded cases count
+   const casesInRange = allCases.filter(c => c.cause_list_date >= startDate && c.cause_list_date <= endDate);
+   caseCountEl.textContent = \`\${casesInRange.length} cases\`;
+ }
+}
+
+function renderInitialState() {
+ console.log('Rendering initial state...');
+ const container = document.getElementById('case-container');
+ 
+ // Show message prompting user to select a time period
+ container.innerHTML = \`
+   <div class="empty-state" style="min-height: 400px;">
+     <i class="fas fa-calendar-alt" style="font-size: 48px; color: #3498db; margin-bottom: 20px;"></i>
+     <h3>Select a Time Period</h3>
+     <p>Click on "Today", "This Week", or "This Month" to load cases for that period.</p>
+   </div>
+ \`;
 }
 
 function renderEmptyLoading() {
@@ -1405,41 +1436,141 @@ function formatDate(dateStr) {
  return formattedDate;
 }
 
-// Fetch all available cause list dates
-async function fetchAvailableDates() {
- console.log('Fetching available cause list dates...');
+// Activate a tab and load its data (lazy loading)
+function activateTab(tabName) {
+ console.log(\`Activating tab: \${tabName}\`);
  
- try {
-   const res = await fetch('/api/frappe/cases?fields=["cause_list_date"]&limit=0', { cache: 'no-store' });
-   const data = await res.json();
-   
-   // Extract unique dates
-   availableDates = [...new Set(data.data
-     .filter(d => d.cause_list_date)
-     .map(d => d.cause_list_date))].sort();
-   
-   console.log(\`Found \${availableDates.length} unique cause list dates\`);
-   
-   // Now fetch cases for the selected date range (today by default)
-   fetchCasesForDateRange(startDate, endDate);
- } catch (error) {
-   console.error('Error fetching cause list dates:', error);
-   document.getElementById('case-container').innerHTML = \`
-     <div class="empty-state">
-       <i class="fas fa-exclamation-triangle"></i>
-       <h3>Error Loading Dates</h3>
-       <p>There was a problem fetching cause list dates. Please try again.</p>
-       <button class="btn btn-primary" onclick="fetchAvailableDates()">
-         <i class="fas fa-sync-alt"></i> Retry
-       </button>
-     </div>
-   \`;
+ // Update active tab
+ activeTab = tabName;
+ 
+ // Reset pagination when switching tabs
+ currentPage = 1;
+ 
+ // Update tab button styles
+ updateTabStyles(tabName);
+ 
+ // Calculate date range based on tab
+ let tabStartDate, tabEndDate;
+ const today = new Date();
+ 
+ switch(tabName) {
+   case 'today':
+     tabStartDate = today.toISOString().split('T')[0];
+     tabEndDate = today.toISOString().split('T')[0];
+     break;
+   case 'this-week':
+     const monday = new Date(today);
+     monday.setDate(today.getDate() - today.getDay() + 1);
+     const sunday = new Date(monday);
+     sunday.setDate(monday.getDate() + 6);
+     tabStartDate = monday.toISOString().split('T')[0];
+     tabEndDate = sunday.toISOString().split('T')[0];
+     break;
+   case 'this-month':
+     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+     tabStartDate = firstDay.toISOString().split('T')[0];
+     tabEndDate = lastDay.toISOString().split('T')[0];
+     break;
+   default:
+     console.error('Unknown tab:', tabName);
+     return;
+ }
+ 
+ // Update global date range
+ startDate = tabStartDate;
+ endDate = tabEndDate;
+ 
+ // Update date inputs
+ document.getElementById('start-date').value = tabStartDate;
+ document.getElementById('end-date').value = tabEndDate;
+ 
+ // Only fetch if this tab hasn't been loaded yet (optimization)
+ if (!loadedTabs.has(tabName)) {
+   console.log(\`Loading data for tab: \${tabName} (dates: \${tabStartDate} to \${tabEndDate})\`);
+   loadedTabs.add(tabName);
+   currentPage = 1; // Reset to page 1 for new tab
+   fetchCasesForDateRange(tabStartDate, tabEndDate, tabName, 1);
+ } else {
+   console.log(\`Tab \${tabName} already loaded, restoring from cache\`);
+   // Restore data from cache for this tab
+   if (tabDataCache[tabName] && tabDataCache[tabName].pages) {
+     // Restore paginated cache
+     pageDataCache = {...tabDataCache[tabName].pages};
+     fetchedPages = new Set(Object.keys(pageDataCache).map(p => parseInt(p)));
+     totalCasesInRange = tabDataCache[tabName].totalCases || 0;
+     // Reconstruct allCases from cached pages
+     allCases = [];
+     Object.keys(pageDataCache).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pageNum => {
+       allCases = allCases.concat(pageDataCache[pageNum]);
+     });
+   } else {
+     // Legacy cache format (all data)
+     allCases = tabDataCache[tabName] || [];
+   }
+   filteredCases = allCases;
+   currentPage = 1; // Reset to page 1 when restoring
+   // Re-render existing data for this tab
+   renderCases();
+   updateRangeDisplay();
  }
 }
 
-// Fetch cases for a specific date range
-async function fetchCasesForDateRange(startDateParam, endDateParam) {
- console.log(\`Fetching cases for range \${startDateParam} to \${endDateParam}...\`);
+// Update tab button styles to show active state
+function updateTabStyles(activeTabName) {
+ // Remove active class from all tab buttons
+ const tabButtons = {
+   'today': document.getElementById('today-btn'),
+   'this-week': document.getElementById('this-week-btn'),
+   'this-month': document.getElementById('this-month-btn')
+ };
+ 
+ // Remove active styling from all buttons
+ Object.values(tabButtons).forEach(btn => {
+   if (btn) {
+     btn.classList.remove('active-tab');
+     btn.style.backgroundColor = '';
+     btn.style.color = '';
+     btn.style.fontWeight = '';
+   }
+ });
+ 
+ // Add active styling to selected tab (if not null)
+ if (activeTabName && tabButtons[activeTabName]) {
+   const activeBtn = tabButtons[activeTabName];
+   activeBtn.classList.add('active-tab');
+   activeBtn.style.backgroundColor = '#3498db';
+   activeBtn.style.color = 'white';
+   activeBtn.style.fontWeight = '600';
+ }
+}
+
+// Fetch cases for a specific date range with server-side pagination
+async function fetchCasesForDateRange(startDateParam, endDateParam, tabName = null, page = 1) {
+ console.log(\`Fetching cases for range \${startDateParam} to \${endDateParam}, page \${page}...\`);
+ 
+ // Check if date range changed - if so, reset pagination cache
+ const dateRangeKey = \`\${startDateParam}-\${endDateParam}\`;
+ if (currentDateRange.start !== startDateParam || currentDateRange.end !== endDateParam) {
+   console.log('Date range changed, resetting pagination cache');
+   fetchedPages.clear();
+   pageDataCache = {};
+   allCases = [];
+   filteredCases = [];
+   currentPage = 1;
+   currentDateRange = { start: startDateParam, end: endDateParam };
+ }
+ 
+ // Check if this page is already cached
+ if (fetchedPages.has(page) && pageDataCache[page]) {
+   console.log(\`Page \${page} already cached, using cached data\`);
+   allCases = pageDataCache[page];
+   filteredCases = allCases;
+   renderCases();
+   updateRangeDisplay();
+   return;
+ }
+ 
  renderEmptyLoading();
  
  try {
@@ -1457,91 +1588,121 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
      return;
    }
    
-   // Fetch cases within the date range
-   console.log(\`Fetching cases for date range: \${startDateParam} to \${endDateParam}\`);
-   const res = await fetch(\`/api/frappe/cases?filters=[["cause_list_date",">=","\${startDateParam}"],["cause_list_date","<=","\${endDateParam}"]]&limit=0\`, { cache: 'no-store' });
+   // First, get total count (fetch page 1 to get count, or we can fetch with limit_start=0)
+   // For Frappe API, we'll fetch first with a limit to get total count, then fetch the specific page
+   
+   // Calculate pagination offset
+   const limitStart = (page - 1) * recordsPerPage;
+   
+   // Fetch only the current page from API (server-side pagination)
+   console.log(\`Fetching page \${page} from API (limit: \${recordsPerPage}, limit_start: \${limitStart})\`);
+   
+   // Frappe API supports limit_start parameter for pagination
+   const apiUrl = \`/api/frappe/cases?filters=[["cause_list_date",">=","\${startDateParam}"],["cause_list_date","<=","\${endDateParam}"]]&limit=\${recordsPerPage}&limit_start=\${limitStart}\`;
+   const res = await fetch(apiUrl, { cache: 'no-store' });
    const data = await res.json();
    
    // Filter out cases marked as not relevant
    const relevantCases = data.data.filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
    
-   console.log(\`Found \${relevantCases.length} cases for date range \${startDateParam} to \${endDateParam}\`);
+   console.log(\`Fetched \${relevantCases.length} cases for page \${page} (offset: \${limitStart})\`);
    
-   // Update allCases with the filtered data
-   allCases = relevantCases;
+   // Get total count from API response or estimate
+   // Frappe typically returns a total count, but if not, we'll need to fetch it separately
+   // For now, if this is page 1 and we got a full page, we know there might be more
+   // If we got less than recordsPerPage, we know this is the last page
+   
+   // Fetch full details for this page only
+   let processedCount = 0;
+   const totalCases = relevantCases.length;
+
+   // Show initial progress
+   updateLoadingProgress(0, totalCases, \`Loading page \${page}...\`);
+   
+   // Fetch full details for all cases in this page
+   const pageDetails = await Promise.all(
+     relevantCases.map(doc =>
+       fetch(\`/api/frappe/cases/\${doc.name}\`, { cache: 'no-store' })
+         .then(r => r.json())
+         .then(d => {
+          processedCount++;
+          // Update progress
+          if (processedCount % 5 === 0 || processedCount === totalCases) {
+            updateLoadingProgress(processedCount, totalCases, \`Loading page \${page} (\${processedCount} of \${totalCases} cases...)\`);
+          }
+          return d.data;
+        })
+     )
+   );
+   
+   // Filter out not relevant cases from details
+   const fullCases = pageDetails.filter(d => (d.relevancy || '').toLowerCase() !== 'not relevant');
+   
+   // Store this page's data in cache
+   pageDataCache[page] = fullCases;
+   fetchedPages.add(page);
+   
+   // Update allCases - combine with previous pages if needed
+   // For filtering to work, we need all loaded data
+   allCases = [];
+   Object.keys(pageDataCache).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pageNum => {
+     allCases = allCases.concat(pageDataCache[pageNum]);
+   });
+   
    filteredCases = allCases;
    
-  // Update range display with case count (without re-rendering table)
-   updateRangeDisplay();
+   // Fetch accurate total count when loading page 1
+   if (page === 1) {
+     try {
+       // Fetch total count by making a query with limit=0 and checking response
+       // Or fetch a single record to see if there are more
+       // Actually, let's fetch all matching records count (without details)
+       const countUrl = \`/api/frappe/cases?filters=[["cause_list_date",">=","\${startDateParam}"],["cause_list_date","<=","\${endDateParam}"]]&limit=0\`;
+       const countRes = await fetch(countUrl, { cache: 'no-store' });
+       const countData = await countRes.json();
+       
+       // Filter out not relevant cases
+       const allRelevantInRange = (countData.data || []).filter(doc => (doc.relevancy || '').toLowerCase() !== 'not relevant');
+       totalCasesInRange = allRelevantInRange.length;
+       console.log(\`Fetched accurate total count: \${totalCasesInRange} cases in date range\`);
+     } catch (countError) {
+       console.warn('Could not fetch total count, using estimate:', countError);
+       // Fallback to estimation if count query fails
+       if (fullCases.length === recordsPerPage) {
+         totalCasesInRange = recordsPerPage + 1;
+       } else {
+         totalCasesInRange = fullCases.length;
+       }
+     }
+   }
    
-   // Fetch full details in batches for better performance
-   let processedCount = 0;
-   const batchSize = 5;
-  const totalCases = relevantCases.length;
- 
-  // Show initial progress
-  updateLoadingProgress(0, totalCases, 'Starting to load cases...');
-  
-  for (let i = 0; i < relevantCases.length; i += batchSize) {
-    const batch = relevantCases.slice(i, i + batchSize);
-    const batchNumber = Math.floor(i / batchSize) + 1;
-    const totalBatches = Math.ceil(relevantCases.length / batchSize);
-    console.log(\`Fetching details for batch \${batchNumber}/\${totalBatches} (\${batch.length} cases)\`);
-    
-    // Fetch full details for this batch
-    const batchDetails = await Promise.all(
-      batch.map(doc =>
-        fetch(\`/api/frappe/cases/\${doc.name}\`, { cache: 'no-store' })
-          .then(r => r.json())
-          .then(d => {
-            processedCount++;
-            // Update progress without re-rendering - user-friendly message
-            if (processedCount % 10 === 0 || processedCount === totalCases) {
-              updateLoadingProgress(processedCount, totalCases, \`Loading cases (\${processedCount} of \${totalCases} loaded...)\`);
-            }
-            console.log(\`Fetched details for case \${processedCount}/\${totalCases}\`);
-            return d.data;
-          })
-      )
-    );
-    
-    // Update allCases with the details we've fetched
-    const fullCases = batchDetails.filter(d => (d.relevancy || '').toLowerCase() !== 'not relevant');
-    
-    // Replace the simplified cases with full case details
-    fullCases.forEach(fullCase => {
-      const index = allCases.findIndex(c => c.name === fullCase.name);
-      if (index !== -1) {
-        allCases[index] = fullCase;
-      } else {
-        allCases.push(fullCase);
-      }
-    });
-    
-    // Update filteredCases but DON'T render yet
-    filteredCases = allCases;
-  }
-  
-  // Update progress to show processing
-  updateLoadingProgress(totalCases, totalCases, \`Loading cases (\${totalCases} of \${totalCases} loaded...)\`);
-  
-  console.log('All case details fetched successfully');
-  
-  // Now render everything ONCE after all data is loaded
-  // This prevents multiple re-renders and page shaking
-    populateFilterOptions();
-  
-  // Render immediately after data load (no debounce needed for initial render)
-  // Clear any pending debounced renders first
-  if (renderTimeout) {
-    clearTimeout(renderTimeout);
-    renderTimeout = null;
-  }
-  isRendering = false;
-  renderCases();
-  
-  // Update range display one final time
-  updateRangeDisplay();
+   // Update estimate if we encounter a partial page (last page)
+   if (fullCases.length < recordsPerPage) {
+     // This is the last page, update total to be accurate
+     totalCasesInRange = limitStart + fullCases.length;
+     console.log(\`Updated total count to \${totalCasesInRange} (found last page)\`);
+   }
+   
+   console.log(\`Page \${page} loaded successfully. Total cases in range: ~\${totalCasesInRange}\`);
+   
+   // Cache data for this tab if tabName is provided
+   if (tabName) {
+     tabDataCache[tabName] = { pages: {...pageDataCache}, totalCases: totalCasesInRange };
+   }
+   
+   // Now render the current page
+   populateFilterOptions();
+   
+   // Render immediately after data load
+   if (renderTimeout) {
+     clearTimeout(renderTimeout);
+     renderTimeout = null;
+   }
+   isRendering = false;
+   renderCases();
+   
+   // Update range display
+   updateRangeDisplay();
 } catch (error) {
   console.error('Error loading cases:', error);
   document.getElementById('case-container').innerHTML = \`
@@ -1555,6 +1716,19 @@ async function fetchCasesForDateRange(startDateParam, endDateParam) {
     </div>
   \`;
 }
+}
+
+// Helper function to check if any filters are active
+function hasActiveFilters() {
+  return !!(document.getElementById('priority-filter')?.value ||
+    document.getElementById('case-age-filter')?.value ||
+    document.getElementById('case-category-filter')?.value ||
+    document.getElementById('case-type-filter')?.value ||
+    document.getElementById('case-stage-filter')?.value ||
+    document.getElementById('match-keyword-filter')?.value ||
+    document.getElementById('court-no-filter')?.value ||
+    document.getElementById('cause-list-filter')?.value ||
+    (document.getElementById('search-input')?.value || '').trim());
 }
 
 // Function to display active filters
@@ -2067,12 +2241,40 @@ const sortedCases = [...cases].sort((a, b) => {
 });
 
 // Calculate pagination
-const totalPages = Math.ceil(sortedCases.length / recordsPerPage);
+// Determine which total to use: filtered count if filters are active, otherwise use server total
+const filtersActive = hasActiveFilters();
+
+// Use filtered count if filters are active, otherwise use server total
+const totalAvailableCases = filtersActive ? sortedCases.length : (totalCasesInRange > 0 ? totalCasesInRange : sortedCases.length);
+const totalPages = Math.ceil(totalAvailableCases / recordsPerPage);
 const startIndex = (currentPage - 1) * recordsPerPage;
 const endIndex = startIndex + recordsPerPage;
-const paginatedCases = sortedCases.slice(startIndex, endIndex);
 
-console.log(\`Showing page \${currentPage} of \${totalPages}: records \${startIndex + 1} to \${Math.min(endIndex, sortedCases.length)} of \${sortedCases.length}\`);
+// For server-side pagination: use current page's cached data directly
+let paginatedCases;
+if (totalCasesInRange > 0 && sortedCases.length < totalAvailableCases && pageDataCache[currentPage]) {
+  // Server-side pagination: use current page's cached data
+  paginatedCases = pageDataCache[currentPage];
+  // Sort the page data
+  paginatedCases = [...paginatedCases].sort((a, b) => {
+    const dateA = a.cause_list_date || '';
+    const dateB = b.cause_list_date || '';
+    const dateComparison = dateA.localeCompare(dateB);
+    if (dateComparison !== 0) return dateComparison;
+    const courtA = a.court_no || '';
+    const courtB = b.court_no || '';
+    const courtComparison = courtA.localeCompare(courtB);
+    if (courtComparison !== 0) return courtComparison;
+    const itemA = parseInt(a.item_no) || 0;
+    const itemB = parseInt(b.item_no) || 0;
+    return itemA - itemB;
+  });
+} else {
+  // Client-side pagination or all data loaded: slice from sorted data
+  paginatedCases = sortedCases.slice(startIndex, endIndex);
+}
+
+console.log(\`Showing page \${currentPage} of \${totalPages}: records \${startIndex + 1} to \${Math.min(endIndex, totalAvailableCases)} of \${totalAvailableCases} (loaded: \${sortedCases.length})\`);
 
 container.innerHTML = \`
   <div class="table-responsive">
@@ -2101,6 +2303,7 @@ tableBody.innerHTML = '';
 
 // Render cases with lazy loading (progressive rendering for smooth UI)
 paginatedCases.forEach((caseDoc, localIndex) => {
+  // For server-side pagination, calculate global index based on current page
   const globalIndex = startIndex + localIndex;
   
   // Use setTimeout for progressive rendering - first 3 immediately, rest with slight delay
@@ -2185,7 +2388,7 @@ paginatedCases.forEach((caseDoc, localIndex) => {
     // Render pagination controls after last row
     if (localIndex === paginatedCases.length - 1) {
       setTimeout(() => {
-        renderPaginationControls(totalPages, sortedCases.length, startIndex, endIndex);
+        renderPaginationControls(totalPages, totalAvailableCases, startIndex, endIndex);
       }, 100);
     }
   }, renderDelay);
@@ -2193,7 +2396,7 @@ paginatedCases.forEach((caseDoc, localIndex) => {
 
 // If no cases, render pagination immediately
 if (paginatedCases.length === 0) {
-  renderPaginationControls(totalPages, sortedCases.length, startIndex, endIndex);
+  renderPaginationControls(totalPages, totalAvailableCases, startIndex, endIndex);
 }
 
 // Reset container min-height after render completes to allow natural sizing
@@ -2267,9 +2470,14 @@ paginationContainer.innerHTML = \`
 \`;
 }
 
-// Function to navigate to a specific page
-function goToPage(page) {
-const totalPages = Math.ceil(totalFilteredCases / recordsPerPage);
+// Function to navigate to a specific page (with server-side pagination)
+async function goToPage(page) {
+// Determine total based on whether filters are active
+const filtersActive = hasActiveFilters();
+
+// Use filtered count if filters are active, otherwise use server total
+const totalAvailable = filtersActive ? totalFilteredCases : (totalCasesInRange > 0 ? totalCasesInRange : filteredCases.length);
+const totalPages = Math.ceil(totalAvailable / recordsPerPage);
 if (page < 1 || page > totalPages) return;
 
 console.log(\`Navigating to page \${page} of \${totalPages}\`);
@@ -2282,8 +2490,21 @@ if (renderTimeout) {
 }
 isRendering = false;
 
-// Re-render with the new page (without resetting pagination)
-renderCases();
+// If this page is already cached, just render it
+if (fetchedPages.has(page) && pageDataCache[page]) {
+  console.log(\`Page \${page} is cached, rendering from cache\`);
+  renderCases();
+  // Scroll to top of table
+  const container = document.getElementById('case-container');
+  if (container) {
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  return;
+}
+
+// Fetch this page from API
+console.log(\`Fetching page \${page} from API...\`);
+await fetchCasesForDateRange(currentDateRange.start, currentDateRange.end, activeTab, page);
 
 // Scroll to top of table
 const container = document.getElementById('case-container');
@@ -2303,7 +2524,12 @@ if (isNaN(page) || page < 1) {
   return;
 }
 
-const totalPages = Math.ceil(totalFilteredCases / recordsPerPage);
+// Determine total based on whether filters are active
+const filtersActive = hasActiveFilters();
+
+const totalAvailable = filtersActive ? totalFilteredCases : (totalCasesInRange > 0 ? totalCasesInRange : filteredCases.length);
+const totalPages = Math.ceil(totalAvailable / recordsPerPage);
+
 if (page > totalPages) {
   showNotification(\`Page number cannot exceed \${totalPages}\`, 'error');
   pageInput.value = currentPage;

@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const fields = searchParams.get('fields')
     const filters = searchParams.get('filters')
     const limit = searchParams.get('limit')
+    const limitStart = searchParams.get('limit_start')
     
     // Build the Frappe API URL
     let frappeUrl = 'https://dev2.crimescan.ai/api/resource/CCMS3'
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
     if (fields) params.append('fields', fields)
     if (filters) params.append('filters', filters)
     if (limit) params.append('limit', limit)
+    if (limitStart) params.append('limit_start', limitStart)
     
     if (params.toString()) {
       frappeUrl += '?' + params.toString()
