@@ -783,36 +783,14 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  width: 100%;
 }
 
 .hpv2-container .main-header {
   margin-bottom: 20px;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 20px;
-  flex-wrap: wrap;
-}
-
-.hpv2-container .main-header > div {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px;
-}
-
-.hpv2-container .main-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #2c3e50;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px;
-  margin: 0;
-}
-
-.hpv2-container .main-title i {
-  color: #3498db;
 }
 
 .hpv2-container .main-header .lcc-ap-signout-btn {
@@ -825,9 +803,9 @@ body {
 }
 
 .hpv2-container .header-content {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 20px;
 }
 
@@ -849,8 +827,8 @@ body {
 }
 
 .hpv2-container .stats-container {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
@@ -1024,9 +1002,9 @@ body {
 }
 
 .hpv2-container .case-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: flex-start !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 15px;
   flex-wrap: wrap;
   gap: 15px;
@@ -1046,15 +1024,15 @@ body {
 }
 
 .hpv2-container .case-meta {
-  display: flex !important;
+  display: flex;
   flex-wrap: wrap;
   gap: 15px;
   margin-bottom: 10px;
 }
 
 .hpv2-container .meta-item {
-  display: flex !important;
-  align-items: center !important;
+  display: flex;
+  align-items: center;
   gap: 5px;
   font-size: 15px;
   color: #6c757d;
@@ -1065,7 +1043,7 @@ body {
 }
 
 .hpv2-container .case-status {
-  display: flex !important;
+  display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 15px;
@@ -1102,8 +1080,8 @@ body {
 }
 
 .hpv2-container .case-parties {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-bottom: 15px;
 }
@@ -1139,7 +1117,7 @@ body {
 }
 
 .hpv2-container .case-actions {
-  display: flex !important;
+  display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
@@ -1154,8 +1132,8 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
-  display: inline-flex !important;
-  align-items: center !important;
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
 }
 
@@ -1198,11 +1176,6 @@ body {
 
 .hpv2-container .loading {
   font-size: 1.1rem;
-  min-height: 200px;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
 }
 
 .hpv2-container .loading::after {
@@ -1240,7 +1213,7 @@ body {
 }
 
 .hpv2-container .modal {
-  display: flex !important;
+  display: flex;
   position: fixed;
   z-index: 1000;
   left: 0;
@@ -1269,9 +1242,9 @@ body {
   background: #495057;
   color: white;
   padding: 25px 30px;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .hpv2-container .modal-title {
@@ -1354,13 +1327,7 @@ body {
 /* Page-scoped font setup for High Priority V2 */
 .hpv2-container,
 .hpv2-container * {
-  font-family: Arial, 'Helvetica', sans-serif !important;
-}
-
-.hpv2-container h1 {
-  font-size: 24px;
-  font-weight: 700;
-  font-style: normal;
+  font-family: Arial, 'Helvetica', sans-serif;
 }
 
 .hpv2-container h2,
@@ -1399,14 +1366,9 @@ body {
   }
 
   .hpv2-container .main-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex-direction: column;
+    align-items: stretch;
     gap: 15px;
-  }
-
-  .hpv2-container .main-title {
-    font-size: 20px;
-    justify-content: center;
   }
 
   .hpv2-container .main-header .lcc-ap-signout-btn {
@@ -1415,7 +1377,7 @@ body {
   }
 
   .hpv2-container .header-content {
-    flex-direction: column !important;
+    flex-direction: column;
     text-align: center;
   }
 
@@ -1428,7 +1390,7 @@ body {
   }
 
   .hpv2-container .stats-container {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
   }
 
@@ -1437,17 +1399,17 @@ body {
   }
 
   .hpv2-container .case-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .hpv2-container .case-parties {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     gap: 15px;
   }
 
   .hpv2-container .case-actions {
-    justify-content: center !important;
+    justify-content: center;
   }
 
   .hpv2-container .cases-content {

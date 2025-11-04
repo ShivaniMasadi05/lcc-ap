@@ -155,26 +155,6 @@ export default function HighPriorityV2Page(): JSX.Element {
 
   const closePrayer = useCallback(() => setIsPrayerOpen(false), []);
 
-  const handleLogout = useCallback(async () => {
-    try {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include"
-      });
-      
-      if (response.ok) {
-        localStorage.removeItem("lcc_ap_remember");
-        router.push('/');
-      } else {
-        console.error("Logout failed");
-        router.push('/');
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-      router.push('/');
-    }
-  }, [router]);
-
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -235,58 +215,61 @@ export default function HighPriorityV2Page(): JSX.Element {
         throw new Error(`HTTP ${response.status}: ${response.statusText}\n${errText}`);
       }
 
-      const data = await response.json();
-      
-      // Handle different response formats from Frappe API
-      let casesArray: Ccms2Case[] = [];
-      
-      if (Array.isArray(data)) {
-        // Direct array response
-        casesArray = data;
-      } else if (data && Array.isArray(data.data)) {
-        // Response with data property
-        casesArray = data.data;
-      } else if (data && data.message && Array.isArray(data.message)) {
-        // Response with message property containing array
-        casesArray = data.message;
-      }
-      
-      setCases(casesArray);
+      const data = (await response.json()) as { data?: Ccms2Case[] };
+      setCases(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      console.error("Error fetching high priority cases:", err);
       setError(message);
-      setCases([]); // Ensure cases is set to empty array on error
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  const handleLogout = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+      
+      if (response.ok) {
+        localStorage.removeItem("lcc_ap_remember");
+        router.push('/');
+      } else {
+        console.error("Logout failed");
+        router.push('/');
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      router.push('/');
+    }
+  }, [router]);
+
   useEffect(() => {
-    // Set page title immediately
+    // Set page title
     if (typeof document !== 'undefined') {
       document.title = 'highpriorityv2'
       
-      // Load FontAwesome asynchronously (non-blocking)
+      // Load FontAwesome only if not already loaded
       if (!document.querySelector('link[href*="font-awesome"]')) {
         const link = document.createElement('link')
         link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
         link.rel = 'stylesheet'
-        link.media = 'print'
-        link.onload = () => { if (link.media) link.media = 'all' }
         document.head.appendChild(link)
       }
     }
-  }, []);
+    
+    // Fetch data immediately
+    fetchData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Fetch data after initial render
-    fetchData();
-    
     // Refresh data every 5 minutes
-    const id = setInterval(fetchData, 5 * 60 * 1000);
+    const id = setInterval(() => {
+      fetchData();
+    }, 5 * 60 * 1000);
     return () => clearInterval(id);
-  }, [fetchData]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="hpv2-container container">
@@ -301,12 +284,11 @@ export default function HighPriorityV2Page(): JSX.Element {
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
             </svg>
           </button>
-          <h1 className="main-title"><i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+          <h1 className="main-title"><i className="fa fa-balance-scale" aria-hidden="true"></i>Legal Command Centre (Powered by Valuepitch)</h1>
         </div>
         <button 
           className="lcc-ap-signout-btn"
           onClick={handleLogout}
-          title="Sign Out"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -397,44 +379,29 @@ export default function HighPriorityV2Page(): JSX.Element {
         </div>
 
         <div className="cases-content" id="casesContent">
-          {isLoading && cases.length === 0 && (
-            <div className="loading">
-              <div style={{ fontSize: "2rem", marginBottom: 15 }}>⏳</div>
-              <div>Loading high priority cases...</div>
-            </div>
-          )}
+          {isLoading && <div className="loading">Loading cases...</div>}
           {!isLoading && error && (
             <div className="error">
               <div style={{ fontSize: "2rem", marginBottom: 10 }}>❌</div>
               <strong>Error fetching data:</strong>
               <br />
-              <code style={{ fontSize: "0.9rem", wordBreak: "break-word" }}>{error}</code>
-              <br />
-              <button 
-                onClick={() => fetchData()} 
-                style={{ marginTop: 15, padding: "8px 16px", background: "#3498db", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-              >
-                Retry
-              </button>
+              <code>{error}</code>
             </div>
           )}
-          {!isLoading && !error && filteredCases.length === 0 && cases.length === 0 && (
+          {!isLoading && !error && filteredCases.length === 0 && (
             <div className="no-cases">
               <div style={{ fontSize: "3rem", marginBottom: 15 }}>📝</div>
               <div>No cases found for this filter</div>
-              <div style={{ marginTop: 10, fontSize: "0.9rem", color: "#6c757d" }}>
-                No high priority cases are currently available in the system.
-              </div>
             </div>
           )}
 
-          {filteredCases.length > 0 && (
+          {!isLoading && !error && filteredCases.length > 0 && (
             <>
-              {filteredCases.map((c) => {
+              {filteredCases.map((c, index) => {
                 const status = getCaseStatus(c.next_hearing_date);
                 const hearingFormatted = formatDate(c.next_hearing_date);
                 return (
-                  <div key={c.name || Math.random()} className={`case-card ${status}`}>
+                  <div key={c.name || `case-${index}`} className={`case-card ${status}`}>
                     <div className="case-header">
                       <div className="case-info">
                         <div className="case-title">
@@ -552,6 +519,14 @@ export default function HighPriorityV2Page(): JSX.Element {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        .main-title { font-size: 24px; font-weight: 700; color: #2c3e50; display: inline-flex; align-items: center; gap: 10px; }
+        .main-title i { color: #3498db; }
+        @media (max-width: 768px) {
+          .main-title { font-size: 20px; justify-content: center; }
+        }
+      `}</style>
     </div>
   );
 }
