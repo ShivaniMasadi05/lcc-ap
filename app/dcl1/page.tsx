@@ -264,8 +264,16 @@ export default function DCL1Page() {
     margin-bottom: 15px;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
+  }
+  #active-filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
   }
   .active-filter-tag {
     background-color: #3498db;
@@ -273,8 +281,10 @@ export default function DCL1Page() {
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 12px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .active-filter-tag .remove-filter {
     margin-left: 5px;
@@ -769,8 +779,9 @@ export default function DCL1Page() {
     <!-- Active filters display -->
     <div id="active-filters" class="active-filters" style="display: none;">
       <span>Active Filters:</span>
+       <div id="filter-results-count" class="filter-results-count"></div>
       <div id="active-filter-tags"></div>
-      <div id="filter-results-count" class="filter-results-count"></div>
+     
     </div>
     
     <div class="filter-group">
@@ -2701,6 +2712,11 @@ document.getElementById('refresh-btn').addEventListener('click', () => {
    };
  }
 </script>
+<footer style="position: relative; bottom: 40px; text-align: right; color: #666666; font-size: 12px; font-style: italic; padding: 20px;">
+  <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.8;">
+    © 2025 Local Command Centre. All rights reserved.
+  </p>
+</footer>
 </body>
 </html>
 ` }} />

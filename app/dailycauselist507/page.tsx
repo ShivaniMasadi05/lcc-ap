@@ -298,8 +298,16 @@ export default function DailyCauseList507Page() {
     margin-bottom: 15px;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
+  }
+  #active-filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
   }
   .active-filter-tag {
     background-color: #3498db;
@@ -307,8 +315,10 @@ export default function DailyCauseList507Page() {
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 12px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .active-filter-tag .remove-filter {
     margin-left: 5px;
@@ -854,8 +864,9 @@ export default function DailyCauseList507Page() {
     <!-- Active filters display -->
     <div id="active-filters" class="active-filters" style="display: none;">
       <span>Active Filters:</span>
+        <div id="filter-results-count" class="filter-results-count"></div>
       <div id="active-filter-tags"></div>
-      <div id="filter-results-count" class="filter-results-count"></div>
+    
     </div>
     
     <div class="filter-group">
@@ -1295,14 +1306,14 @@ function initializeDateRange() {
    activateTab('today');
  });
  
- // Yesterday button - custom date selection (not a main tab)
+ // Yesterday button - custom date selection with highlighting
  yesterdayBtn.addEventListener('click', function() {
    const yesterday = new Date();
    yesterday.setDate(yesterday.getDate() - 1);
    const yesterdayStr = yesterday.toISOString().split('T')[0];
-   // Clear active tab since this is a custom selection
-   activeTab = null;
-   updateTabStyles(null);
+   // Set active tab to 'yesterday' for highlighting
+   activeTab = 'yesterday';
+   updateTabStyles('yesterday');
    setDateRange(yesterdayStr, yesterdayStr);
  });
  
@@ -1311,16 +1322,16 @@ function initializeDateRange() {
    activateTab('this-week');
  });
  
- // Last week button - custom date selection (not a main tab)
+ // Last week button - custom date selection with highlighting
  lastWeekBtn.addEventListener('click', function() {
    const today = new Date();
    const lastMonday = new Date(today);
    lastMonday.setDate(today.getDate() - today.getDay() - 6);
    const lastSunday = new Date(lastMonday);
    lastSunday.setDate(lastMonday.getDate() + 6);
-   // Clear active tab since this is a custom selection
-   activeTab = null;
-   updateTabStyles(null);
+   // Set active tab to 'last-week' for highlighting
+   activeTab = 'last-week';
+   updateTabStyles('last-week');
    setDateRange(lastMonday.toISOString().split('T')[0], lastSunday.toISOString().split('T')[0]);
  });
  
@@ -1521,7 +1532,9 @@ function updateTabStyles(activeTabName) {
  // Remove active class from all tab buttons
  const tabButtons = {
    'today': document.getElementById('today-btn'),
+   'yesterday': document.getElementById('yesterday-btn'),
    'this-week': document.getElementById('this-week-btn'),
+   'last-week': document.getElementById('last-week-btn'),
    'this-month': document.getElementById('this-month-btn')
  };
  
@@ -3002,6 +3015,11 @@ return function() {
 };
 }
 </script>
+<footer style="position: relative; bottom: 40px; text-align: right; color: #666666; font-size: 12px; font-style: italic; padding: 20px;">
+  <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.8;">
+    © 2025 Local Command Centre. All rights reserved.
+  </p>
+</footer>
 </body>
 </html>
     ` }} />

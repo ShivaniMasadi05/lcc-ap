@@ -372,6 +372,7 @@ export default function HighPriorityV2Page(): JSX.Element {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
+    <>
     <div className="hpv2-container container">
       <div className="main-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -907,6 +908,23 @@ export default function HighPriorityV2Page(): JSX.Element {
         }
       `}</style>
     </div>
+
+    <footer style={{    
+      position: 'relative',
+      bottom: '40px',       
+      textAlign: 'right',
+      color: '#666666',
+      fontSize: '12px',
+      fontStyle: 'italic',
+      marginTop: '20px',
+      paddingRight: '20px',
+      width: '100%'
+    }}>
+      <p style={{ margin: '50px 0 0 10px', fontSize: '11px', opacity: 0.8 }}>
+        © 2025 Local Command Centre. All rights reserved.
+      </p>
+    </footer>
+    </>
   );
 }
 

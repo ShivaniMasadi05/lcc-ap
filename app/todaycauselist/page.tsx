@@ -149,6 +149,19 @@ export default function TodaysCauseListPage() {
         <div className="welcome-footer">
           <p>Click on any card to access the respective court case listings</p>
         </div>
+        
+        <footer style={{    
+         
+          bottom: '40px',       
+          textAlign: 'right',
+          color: '#666666',
+          fontSize: '12px',
+          fontStyle: 'italic'
+        }}>
+          <p style={{ margin: '5px 0 0 0', fontSize: '11px', opacity: 0.8 }}>
+            © 2025 Local Command Centre. All rights reserved.
+          </p>
+        </footer>
       </div>
     </div>
   )
