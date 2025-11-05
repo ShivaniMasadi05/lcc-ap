@@ -911,7 +911,8 @@ body {
   box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   min-height: 500px;
-  padding-bottom: 80px;
+  padding-bottom: 100px;
+  margin-bottom: 20px;
 }
 
 .hpv2-container .cases-header {

@@ -600,16 +600,17 @@ export default function HighPriorityV2Page(): JSX.Element {
         {/* Pagination Component */}
         {!isLoading && !error && filteredCases.length > 0 && (
           <div className="pagination-container">
-            {totalPages <= 1 ? (
-              <div className="pagination-info">
-                Showing all {totalCases} cases
-              </div>
-            ) : (
-              <>
-                <div className="pagination-info">
-                  Showing {startIndex + 1} to {Math.min(endIndex, totalCases)} of {totalCases} cases (Page {currentPage} of {totalPages})
+            <div className="pagination-inner">
+              {totalPages <= 1 ? (
+                <div className="pagination-info" style={{ textAlign: 'center', width: '100%' }}>
+                  Showing all {totalCases} cases
                 </div>
-            <div className="pagination-controls">
+              ) : (
+                <>
+                  <div className="pagination-info" style={{ textAlign: 'center', width: '100%' }}>
+                    Showing {startIndex + 1} to {Math.min(endIndex, totalCases)} of {totalCases} cases (Page {currentPage} of {totalPages})
+                  </div>
+                  <div className="pagination-controls">
               <button
                 className="pagination-btn"
                 onClick={() => goToPage(1)}
@@ -684,7 +685,7 @@ export default function HighPriorityV2Page(): JSX.Element {
               >
                 <i className="fas fa-angle-double-right"></i>
               </button>
-              <span style={{ marginLeft: "10px" }}>Go to:</span>
+              <span style={{ marginLeft: "8px", fontSize: "12px", color: "#6c757d" }}>Go to:</span>
               <input
                 type="number"
                 className="pagination-input"
@@ -706,12 +707,14 @@ export default function HighPriorityV2Page(): JSX.Element {
                 }}
                 disabled={isGoButtonDisabled}
                 title={isGoButtonDisabled ? "Enter a valid page number" : "Go to page"}
+                style={{ borderRadius: "20px" }}
               >
                 Go
               </button>
+                  </div>
+                </>
+              )}
             </div>
-              </>
-            )}
           </div>
         )}
       </div>
@@ -749,20 +752,39 @@ export default function HighPriorityV2Page(): JSX.Element {
           .hpv2-container .header-subtitle { font-size: 11px; }
           
           .pagination-container {
-            padding: 10px 15px;
-            flex-direction: column;
-            gap: 8px;
+            padding: 15px;
+          }
+          
+          .pagination-inner {
+            gap: 10px;
+            max-width: 100%;
           }
           
           .pagination-info {
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             width: 100%;
+            padding: 0 5px;
           }
           
           .pagination-controls {
             width: 100%;
             justify-content: center;
+            gap: 3px;
+            padding: 0 5px;
+          }
+          
+          .pagination-btn {
+            padding: 5px 8px;
+            font-size: 11px;
+            min-width: 28px;
+            flex-shrink: 0;
+          }
+          
+          .pagination-input {
+            width: 45px;
+            padding: 4px 6px;
+            font-size: 11px;
           }
         }
 
@@ -773,45 +795,73 @@ export default function HighPriorityV2Page(): JSX.Element {
           left: 0;
           right: 0;
           display: flex;
-          justify-content: space-between;
+          justify-content: center;
           align-items: center;
-          padding: 12px 20px;
-          background-color: #ffffff;
-          border-top: 2px solid #e0e0e0;
-          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(10px);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
           z-index: 1000;
-          flex-wrap: wrap;
-          gap: 10px;
+        }
+        
+        .pagination-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        
+        @media (min-width: 768px) and (max-width: 1024px) {
+          .pagination-inner {
+            max-width: 900px;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .pagination-inner {
+            max-width: 1200px;
+          }
         }
         
         @media (min-width: 1400px) {
           .pagination-container {
-            max-width: 1400px;
-            left: 50%;
-            transform: translateX(-50%);
+            padding-left: calc((100% - 1400px) / 2 + 20px);
+            padding-right: calc((100% - 1400px) / 2 + 20px);
+          }
+          .pagination-inner {
+            max-width: 1200px;
           }
         }
         .pagination-info {
-          font-size: 14px;
+          font-size: 13px;
           color: #2c3e50;
           font-weight: 500;
+          margin-bottom: 4px;
         }
         .pagination-controls {
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 4px;
           flex-wrap: wrap;
+          justify-content: center;
+          width: 100%;
+          max-width: 100%;
         }
         .pagination-btn {
-          padding: 8px 12px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background-color: white;
+          padding: 6px 10px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
+          background-color: rgba(255, 255, 255, 0.9);
           color: #2c3e50;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 12px;
           transition: all 0.2s ease;
-          min-width: 40px;
+          min-width: 32px;
           text-align: center;
         }
         .pagination-btn:hover:not(:disabled) {
@@ -828,27 +878,28 @@ export default function HighPriorityV2Page(): JSX.Element {
           color: white;
           border-color: #2980b9;
           font-weight: bold;
-          font-size: 15px;
-          padding: 10px 14px;
-          box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4), 0 0 0 2px rgba(52, 152, 219, 0.2);
+          font-size: 12px;
+          padding: 6px 10px;
+          box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
           transform: scale(1.05);
-          border-width: 2px;
+          border-width: 1px;
           position: relative;
           z-index: 1;
         }
         
         .pagination-btn.active:hover {
           background: linear-gradient(135deg, #2980b9, #1f5f8b);
-          box-shadow: 0 3px 12px rgba(52, 152, 219, 0.5), 0 0 0 2px rgba(52, 152, 219, 0.3);
+          box-shadow: 0 3px 8px rgba(52, 152, 219, 0.4);
           transform: scale(1.08);
         }
         .pagination-input {
-          width: 60px;
-          padding: 6px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
+          width: 50px;
+          padding: 5px 8px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
           text-align: center;
-          font-size: 14px;
+          font-size: 12px;
+          background-color: rgba(255, 255, 255, 0.9);
         }
         .pagination-input:focus {
           outline: none;
