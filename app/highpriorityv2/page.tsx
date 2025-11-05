@@ -105,6 +105,11 @@ export default function HighPriorityV2Page(): JSX.Element {
   const [prayerTitle, setPrayerTitle] = useState<string>("");
   const [prayerContent, setPrayerContent] = useState<string>("");
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const recordsPerPage = 10;
+  const [pageInputValue, setPageInputValue] = useState<string>("");
+
   const today = useMemo(() => toISODateOnly(new Date()), []);
   const tomorrow = useMemo(
     () => toISODateOnly(new Date(Date.now() + 86400000)),
@@ -135,6 +140,34 @@ export default function HighPriorityV2Page(): JSX.Element {
     });
   }, [cases, currentFilter, today, tomorrow, after15Days]);
 
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+    setPageInputValue("");
+  }, [currentFilter]);
+
+  // Sync pageInputValue with currentPage
+  useEffect(() => {
+    setPageInputValue(currentPage.toString());
+  }, [currentPage]);
+
+  // Pagination calculations
+  const totalCases = filteredCases.length;
+  const totalPages = useMemo(() => Math.ceil(totalCases / recordsPerPage), [totalCases]);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedCases = useMemo(() => {
+    return filteredCases.slice(startIndex, endIndex);
+  }, [filteredCases, startIndex, endIndex]);
+
+  // Check if Go button should be disabled
+  const isGoButtonDisabled = useMemo(() => {
+    const trimmedValue = pageInputValue.trim();
+    if (!trimmedValue || trimmedValue === '') return true;
+    const page = parseInt(trimmedValue, 10);
+    return isNaN(page) || page < 1 || page > totalPages || page === currentPage;
+  }, [pageInputValue, totalPages, currentPage]);
+
   const counts = useMemo(() => {
     return {
       all: cases.length,
@@ -154,6 +187,73 @@ export default function HighPriorityV2Page(): JSX.Element {
   }, []);
 
   const closePrayer = useCallback(() => setIsPrayerOpen(false), []);
+
+  // Pagination navigation functions
+  const goToPage = useCallback((page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    setPageInputValue(page.toString());
+    // Scroll to top of cases container
+    const casesContainer = document.getElementById("casesContent");
+    if (casesContainer) {
+      casesContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [totalPages]);
+
+  const handlePageInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string for typing, but validate on submit
+    // Only allow numbers and empty string
+    if (value === '' || /^\d+$/.test(value)) {
+      setPageInputValue(value);
+    }
+  }, []);
+
+  const handlePageInputSubmit = useCallback(() => {
+    // Trim and check if empty
+    const trimmedValue = pageInputValue.trim();
+    if (!trimmedValue || trimmedValue === '') {
+      setPageInputValue(currentPage.toString());
+      return;
+    }
+    
+    const page = parseInt(trimmedValue, 10);
+    if (isNaN(page) || page < 1) {
+      alert("Please enter a valid page number");
+      setPageInputValue(currentPage.toString());
+      return;
+    }
+    if (page > totalPages) {
+      alert(`Page number cannot exceed ${totalPages}`);
+      setPageInputValue(currentPage.toString());
+      return;
+    }
+    if (page === currentPage) {
+      // Already on this page, just reset the input
+      setPageInputValue(currentPage.toString());
+      return;
+    }
+    goToPage(page);
+  }, [pageInputValue, totalPages, currentPage, goToPage]);
+
+  const handlePageInputKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handlePageInputSubmit();
+    }
+  }, [handlePageInputSubmit]);
+
+  const handlePageInputBlur = useCallback(() => {
+    // If input is empty or invalid, reset to current page
+    const trimmedValue = pageInputValue.trim();
+    if (!trimmedValue || trimmedValue === '') {
+      setPageInputValue(currentPage.toString());
+      return;
+    }
+    const page = parseInt(trimmedValue, 10);
+    if (isNaN(page) || page < 1 || page > totalPages) {
+      setPageInputValue(currentPage.toString());
+    }
+  }, [pageInputValue, currentPage, totalPages]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -284,7 +384,10 @@ export default function HighPriorityV2Page(): JSX.Element {
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
             </svg>
           </button>
+          <div className="header-title-section">
           <h1 className="main-title"><i className="fa fa-balance-scale" aria-hidden="true"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+            <p className="header-subtitle">High Priority Cases Dashboard - Real-time monitoring of critical CCMS2 cases</p>
+          </div>
         </div>
         <button 
           className="lcc-ap-signout-btn"
@@ -295,15 +398,6 @@ export default function HighPriorityV2Page(): JSX.Element {
           </svg>
           Sign Out
         </button>
-      </div>
-      
-      <div className="header">
-        <div className="header-content">
-          <div className="header-text">
-            <h2> High Priority Cases Dashboard</h2>
-            <p>Real-time monitoring of critical CCMS2 cases</p>
-          </div>
-        </div>
       </div>
 
       <div className="stats-container">
@@ -397,7 +491,7 @@ export default function HighPriorityV2Page(): JSX.Element {
 
           {!isLoading && !error && filteredCases.length > 0 && (
             <>
-              {filteredCases.map((c, index) => {
+              {paginatedCases.map((c, index) => {
                 const status = getCaseStatus(c.next_hearing_date);
                 const hearingFormatted = formatDate(c.next_hearing_date);
                 return (
@@ -502,6 +596,124 @@ export default function HighPriorityV2Page(): JSX.Element {
             </>
           )}
         </div>
+
+        {/* Pagination Component */}
+        {!isLoading && !error && filteredCases.length > 0 && (
+          <div className="pagination-container">
+            {totalPages <= 1 ? (
+              <div className="pagination-info">
+                Showing all {totalCases} cases
+              </div>
+            ) : (
+              <>
+                <div className="pagination-info">
+                  Showing {startIndex + 1} to {Math.min(endIndex, totalCases)} of {totalCases} cases (Page {currentPage} of {totalPages})
+                </div>
+            <div className="pagination-controls">
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+              >
+                <i className="fas fa-angle-double-left"></i>
+              </button>
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <i className="fas fa-angle-left"></i> Prev
+              </button>
+              {(() => {
+                // Calculate which page numbers to show
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, currentPage + 2);
+                
+                // Adjust if we're near the beginning or end
+                if (currentPage <= 3) {
+                  endPage = Math.min(5, totalPages);
+                }
+                if (currentPage >= totalPages - 2) {
+                  startPage = Math.max(1, totalPages - 4);
+                }
+                
+                const pageButtons = [];
+                for (let i = startPage; i <= endPage; i++) {
+                  pageButtons.push(i);
+                }
+                
+                return (
+                  <>
+                    {startPage > 1 && (
+                      <>
+                        <button className="pagination-btn" onClick={() => goToPage(1)}>1</button>
+                        {startPage > 2 && <span>...</span>}
+                      </>
+                    )}
+                    {pageButtons.map((page) => (
+                      <button
+                        key={page}
+                        className={`pagination-btn ${page === currentPage ? "active" : ""}`}
+                        onClick={() => goToPage(page)}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    {endPage < totalPages && (
+                      <>
+                        {endPage < totalPages - 1 && <span>...</span>}
+                        <button className="pagination-btn" onClick={() => goToPage(totalPages)}>
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next <i className="fas fa-angle-right"></i>
+              </button>
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                <i className="fas fa-angle-double-right"></i>
+              </button>
+              <span style={{ marginLeft: "10px" }}>Go to:</span>
+              <input
+                type="number"
+                className="pagination-input"
+                min={1}
+                max={totalPages}
+                value={pageInputValue}
+                onChange={handlePageInputChange}
+                onKeyPress={handlePageInputKeyPress}
+                onBlur={handlePageInputBlur}
+                placeholder={currentPage.toString()}
+              />
+              <button 
+                className="pagination-btn" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!isGoButtonDisabled) {
+                    handlePageInputSubmit();
+                  }
+                }}
+                disabled={isGoButtonDisabled}
+                title={isGoButtonDisabled ? "Enter a valid page number" : "Go to page"}
+              >
+                Go
+              </button>
+            </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {isPrayerOpen && (
@@ -521,10 +733,126 @@ export default function HighPriorityV2Page(): JSX.Element {
       )}
 
       <style jsx global>{`
-        .main-title { font-size: 24px; font-weight: 700; color: #2c3e50; display: inline-flex; align-items: center; gap: 10px; }
+        .main-title { 
+          font-size: 22px; 
+          font-weight: 700; 
+          color: #2c3e50; 
+          display: inline-flex; 
+          align-items: center; 
+          gap: 10px; 
+          margin: 0;
+        }
         .main-title i { color: #3498db; }
         @media (max-width: 768px) {
-          .main-title { font-size: 20px; justify-content: center; }
+          .main-title { font-size: 18px; }
+          .hpv2-container .header-title-section { gap: 2px; }
+          .hpv2-container .header-subtitle { font-size: 11px; }
+          
+          .pagination-container {
+            padding: 10px 15px;
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .pagination-info {
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+          }
+          
+          .pagination-controls {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
+        /* Pagination styles */
+        .pagination-container {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 20px;
+          background-color: #ffffff;
+          border-top: 2px solid #e0e0e0;
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        
+        @media (min-width: 1400px) {
+          .pagination-container {
+            max-width: 1400px;
+            left: 50%;
+            transform: translateX(-50%);
+          }
+        }
+        .pagination-info {
+          font-size: 14px;
+          color: #2c3e50;
+          font-weight: 500;
+        }
+        .pagination-controls {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          flex-wrap: wrap;
+        }
+        .pagination-btn {
+          padding: 8px 12px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          background-color: white;
+          color: #2c3e50;
+          cursor: pointer;
+          font-size: 14px;
+          transition: all 0.2s ease;
+          min-width: 40px;
+          text-align: center;
+        }
+        .pagination-btn:hover:not(:disabled) {
+          background-color: #3498db;
+          color: white;
+          border-color: #3498db;
+        }
+        .pagination-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .pagination-btn.active {
+          background: linear-gradient(135deg, #3498db, #2980b9);
+          color: white;
+          border-color: #2980b9;
+          font-weight: bold;
+          font-size: 15px;
+          padding: 10px 14px;
+          box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4), 0 0 0 2px rgba(52, 152, 219, 0.2);
+          transform: scale(1.05);
+          border-width: 2px;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .pagination-btn.active:hover {
+          background: linear-gradient(135deg, #2980b9, #1f5f8b);
+          box-shadow: 0 3px 12px rgba(52, 152, 219, 0.5), 0 0 0 2px rgba(52, 152, 219, 0.3);
+          transform: scale(1.08);
+        }
+        .pagination-input {
+          width: 60px;
+          padding: 6px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          text-align: center;
+          font-size: 14px;
+        }
+        .pagination-input:focus {
+          outline: none;
+          border-color: #3498db;
         }
       `}</style>
     </div>
