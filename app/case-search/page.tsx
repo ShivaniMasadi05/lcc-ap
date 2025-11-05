@@ -178,18 +178,20 @@ export default function CaseSearchPage() {
         background: 'white',
         padding: '30px',
         color: '#333',
-        height: 'calc(100vh - 80px)',
-        overflow: 'hidden'
+        minHeight: 'calc(100vh - 80px)',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        <h2 style={{
-          textAlign: 'center',
-          marginBottom: '30px',
-          color: '#1a202c'
-        }}>
-         High Court Case Search
-        </h2>
+        <div style={{ flex: 1 }}>
+          <h2 style={{
+            textAlign: 'center',
+            marginBottom: '30px',
+            color: '#1a202c'
+          }}>
+           High Court Case Search
+          </h2>
 
-        <form 
+          <form 
           onSubmit={handleSubmit}
           style={{
             maxWidth: '500px',
@@ -329,15 +331,31 @@ export default function CaseSearchPage() {
           </button>
         </form>
 
-        {/* Error message display */}
-        {error && !showModal && (
-          <div style={{
-            marginTop: '20px',
-            textAlign: 'center'
-          }}>
-            <p style={{ color: '#e53e3e', fontSize: '16px' }}>❌ {error}</p>
-          </div>
-        )}
+          {/* Error message display */}
+          {error && !showModal && (
+            <div style={{
+              marginTop: '20px',
+              textAlign: 'center'
+            }}>
+              <p style={{ color: '#e53e3e', fontSize: '16px' }}>❌ {error}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer style={{    
+          position: 'relative',
+          bottom: '40px',       
+          textAlign: 'right',
+          color: '#666666',
+          fontSize: '12px',
+          fontStyle: 'italic'
+        }}>
+         
+          <p style={{ margin: '5px 0 0 0', fontSize: '11px', opacity: 0.8 }}>
+          © 2025 Local Command Centre. All rights reserved.
+          </p>
+        </footer>
 
         {/* Modal Popup */}
         {showModal && (
