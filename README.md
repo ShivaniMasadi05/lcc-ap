@@ -103,4 +103,3 @@ npm start
 - Cookies are properly managed and forwarded
 - CORS issues are avoided by using Next.js as a proxy
 - Session management is handled by Frappe backend
-
