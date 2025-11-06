@@ -131,7 +131,7 @@ export default function CaseSearchPage() {
 
   const handleMyAccount = () => {
     setShowDropdown(false)
-    alert('My Account feature coming soon!')
+    window.open('/my-account', '_blank')
   }
 
   const handleProfileClick = () => {

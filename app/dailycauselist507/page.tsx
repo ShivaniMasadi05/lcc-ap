@@ -3122,7 +3122,7 @@ document.addEventListener('click', function(e) {
 // My Account handler
 document.getElementById('my-account-item').addEventListener('click', function() {
   document.getElementById('profile-dropdown').classList.remove('show');
-  alert('My Account feature coming soon!');
+  window.open('/my-account', '_blank');
 });
 
 // Sign Out handler

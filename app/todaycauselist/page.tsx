@@ -103,9 +103,7 @@ export default function TodaysCauseListPage() {
 
   const handleMyAccount = () => {
     setShowDropdown(false)
-    // TODO: Implement My Account functionality
-    // For now, just show an alert or navigate to account page
-    alert('My Account feature coming soon!')
+    window.open('/my-account', '_blank')
   }
 
   const handleProfileClick = () => {

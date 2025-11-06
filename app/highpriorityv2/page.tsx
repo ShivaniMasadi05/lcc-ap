@@ -374,7 +374,7 @@ export default function HighPriorityV2Page(): JSX.Element {
 
   const handleMyAccount = useCallback(() => {
     setShowDropdown(false);
-    alert('My Account feature coming soon!');
+    window.open('/my-account', '_blank');
   }, []);
 
   const handleProfileClick = useCallback(() => {
@@ -674,76 +674,115 @@ export default function HighPriorityV2Page(): JSX.Element {
           <div className="pagination-container">
             <div className="pagination-inner">
               {totalPages <= 1 ? (
-                <div className="pagination-info-left">
+                <div className="pagination-info" style={{ textAlign: 'center', width: '100%' }}>
                   Showing all {totalCases} cases
                 </div>
               ) : (
                 <>
-                  <div className="pagination-info-left">
-                    Page {currentPage} of {totalPages}
+                  <div className="pagination-info" style={{ textAlign: 'center', width: '100%' }}>
+                    Showing {startIndex + 1} to {Math.min(endIndex, totalCases)} of {totalCases} cases (Page {currentPage} of {totalPages})
                   </div>
                   <div className="pagination-controls">
-                    {currentPage > 1 && (
-                      <button
-                        className="pagination-link"
-                        onClick={() => goToPage(currentPage - 1)}
-                        title="Previous page"
-                      >
-                        Prev
-                      </button>
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+              >
+                <i className="fas fa-angle-double-left"></i>
+              </button>
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <i className="fas fa-angle-left"></i> Prev
+              </button>
+              {(() => {
+                // Calculate which page numbers to show
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, currentPage + 2);
+                
+                // Adjust if we're near the beginning or end
+                if (currentPage <= 3) {
+                  endPage = Math.min(5, totalPages);
+                }
+                if (currentPage >= totalPages - 2) {
+                  startPage = Math.max(1, totalPages - 4);
+                }
+                
+                const pageButtons = [];
+                for (let i = startPage; i <= endPage; i++) {
+                  pageButtons.push(i);
+                }
+                
+                return (
+                  <>
+                    {startPage > 1 && (
+                      <>
+                        <button className="pagination-btn" onClick={() => goToPage(1)}>1</button>
+                        {startPage > 2 && <span>...</span>}
+                      </>
                     )}
-                    
-                    {/* Page number links */}
-                    {(() => {
-                      // Show up to 10 pages starting from current page
-                      let startPage = currentPage;
-                      let endPage = Math.min(currentPage + 9, totalPages);
-                      
-                      // If near the end, show pages before current
-                      if (endPage === totalPages && totalPages > 10) {
-                        startPage = Math.max(1, totalPages - 9);
-                        endPage = totalPages;
-                      }
-                      
-                      const pageNumbers = [];
-                      for (let i = startPage; i <= endPage; i++) {
-                        pageNumbers.push(i);
-                      }
-                      
-                      return (
-                        <>
-                          {pageNumbers.map((page) => (
-                            page === currentPage ? (
-                              <button
-                                key={page}
-                                className="pagination-btn-active"
-                                aria-current="page"
-                              >
-                                {page}
-                              </button>
-                            ) : (
-                              <button
-                                key={page}
-                                className="pagination-link"
-                                onClick={() => goToPage(page)}
-                              >
-                                {page}
-                              </button>
-                            )
-                          ))}
-                        </>
-                      );
-                    })()}
-                    
-                    {currentPage < totalPages && (
+                    {pageButtons.map((page) => (
                       <button
-                        className="pagination-link"
-                        onClick={() => goToPage(currentPage + 1)}
-                        title="Next page"
+                        key={page}
+                        className={`pagination-btn ${page === currentPage ? "active" : ""}`}
+                        onClick={() => goToPage(page)}
                       >
-                        NEXT
+                        {page}
                       </button>
+                    ))}
+                    {endPage < totalPages && (
+                      <>
+                        {endPage < totalPages - 1 && <span>...</span>}
+                        <button className="pagination-btn" onClick={() => goToPage(totalPages)}>
+                          {totalPages}
+                        </button>
+                      </>
                     )}
+                  </>
+                );
+              })()}
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next <i className="fas fa-angle-right"></i>
+              </button>
+              <button
+                className="pagination-btn"
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                <i className="fas fa-angle-double-right"></i>
+              </button>
+              <span style={{ marginLeft: "8px", fontSize: "12px", color: "#6c757d" }}>Go to:</span>
+              <input
+                type="number"
+                className="pagination-input"
+                min={1}
+                max={totalPages}
+                value={pageInputValue}
+                onChange={handlePageInputChange}
+                onKeyPress={handlePageInputKeyPress}
+                onBlur={handlePageInputBlur}
+                placeholder={currentPage.toString()}
+              />
+              <button 
+                className="pagination-btn" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!isGoButtonDisabled) {
+                    handlePageInputSubmit();
+                  }
+                }}
+                disabled={isGoButtonDisabled}
+                title={isGoButtonDisabled ? "Enter a valid page number" : "Go to page"}
+                style={{ borderRadius: "20px" }}
+              >
+                Go
+              </button>
                   </div>
                 </>
               )}
@@ -785,7 +824,7 @@ export default function HighPriorityV2Page(): JSX.Element {
           .hpv2-container .header-subtitle { font-size: 11px; }
           
           .pagination-container {
-            padding: 10px 15px;
+            padding: 15px;
           }
           
           .pagination-inner {
@@ -800,59 +839,50 @@ export default function HighPriorityV2Page(): JSX.Element {
             padding: 0 5px;
           }
           
-          .pagination-inner {
-            flex-direction: column;
-            gap: 12px;
-            align-items: flex-start;
-          }
-          
-          .pagination-info-left {
-            font-size: 12px;
-            width: 100%;
-          }
-          
           .pagination-controls {
             width: 100%;
-            justify-content: flex-start;
-            gap: 8px;
-            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3px;
+            padding: 0 5px;
           }
           
-          .pagination-btn-active {
-            width: 32px;
-            height: 32px;
-            font-size: 12px;
+          .pagination-btn {
+            padding: 5px 8px;
+            font-size: 11px;
+            min-width: 28px;
+            flex-shrink: 0;
           }
           
-          .pagination-link {
-            font-size: 12px;
+          .pagination-input {
+            width: 45px;
+            padding: 4px 6px;
+            font-size: 11px;
           }
         }
 
-        /* Pagination styles - minimalist design matching image */
+        /* Pagination styles */
         .pagination-container {
-          position: sticky;
+          position: fixed;
           bottom: 0;
           left: 0;
           right: 0;
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 14px 20px;
-          background: rgba(255, 255, 255, 0.98);
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(10px);
-          border-top: 1px solid rgba(0, 0, 0, 0.08);
-          box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
-          z-index: 100;
-          margin: 0;
-          border-bottom-left-radius: 20px;
-          border-bottom-right-radius: 20px;
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+          z-index: 1000;
         }
         
         .pagination-inner {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
+          gap: 12px;
           width: 100%;
           max-width: 1200px;
           margin: 0 auto;
@@ -879,57 +909,73 @@ export default function HighPriorityV2Page(): JSX.Element {
             max-width: 1200px;
           }
         }
-        
-        .pagination-info-left {
-          font-size: 14px;
+        .pagination-info {
+          font-size: 13px;
           color: #2c3e50;
-          font-weight: 400;
+          font-weight: 500;
+          margin-bottom: 4px;
         }
-        
         .pagination-controls {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 4px;
           flex-wrap: wrap;
-        }
-        
-        /* Active page - blue circular button */
-        .pagination-btn-active {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background-color: #3498db;
-          color: white;
-          border: none;
-          cursor: default;
-          font-size: 14px;
-          font-weight: 500;
-          display: inline-flex;
-          align-items: center;
           justify-content: center;
-          padding: 0;
-          box-shadow: 0 0 0 1px rgba(52, 152, 219, 0.2);
+          width: 100%;
+          max-width: 100%;
         }
-        
-        /* Inactive page numbers and navigation - plain text links */
-        .pagination-link {
-          background: none;
-          border: none;
+        .pagination-btn {
+          padding: 6px 10px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
+          background-color: rgba(255, 255, 255, 0.9);
           color: #2c3e50;
           cursor: pointer;
-          font-size: 14px;
-          font-weight: 400;
-          padding: 0;
-          text-decoration: none;
-          transition: color 0.2s ease;
+          font-size: 12px;
+          transition: all 0.2s ease;
+          min-width: 32px;
+          text-align: center;
+        }
+        .pagination-btn:hover:not(:disabled) {
+          background-color: #3498db;
+          color: white;
+          border-color: #3498db;
+        }
+        .pagination-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .pagination-btn.active {
+          background: linear-gradient(135deg, #3498db, #2980b9);
+          color: white;
+          border-color: #2980b9;
+          font-weight: bold;
+          font-size: 12px;
+          padding: 6px 10px;
+          box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+          transform: scale(1.05);
+          border-width: 1px;
+          position: relative;
+          z-index: 1;
         }
         
-        .pagination-link:hover {
-          color: #3498db;
+        .pagination-btn.active:hover {
+          background: linear-gradient(135deg, #2980b9, #1f5f8b);
+          box-shadow: 0 3px 8px rgba(52, 152, 219, 0.4);
+          transform: scale(1.08);
         }
-        
-        .pagination-link:active {
-          color: #2980b9;
+        .pagination-input {
+          width: 50px;
+          padding: 5px 8px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          border-radius: 20px;
+          text-align: center;
+          font-size: 12px;
+          background-color: rgba(255, 255, 255, 0.9);
+        }
+        .pagination-input:focus {
+          outline: none;
+          border-color: #3498db;
         }
       `}</style>
     </div>
