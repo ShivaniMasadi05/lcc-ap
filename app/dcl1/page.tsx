@@ -462,68 +462,119 @@ export default function DCL1Page() {
     position: relative;
   }
 
-  /* Pagination styles */
+  /* Pagination styles - minimalist design matching highpriorityv2 */
   .pagination-container {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    border: 1px solid #e0e0e0;
-    flex-wrap: wrap;
-    gap: 10px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    z-index: 100;
+    margin: 0;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
   }
-  .pagination-info {
+  
+  .pagination-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .pagination-info-left {
     font-size: 14px;
     color: #2c3e50;
-    font-weight: 500;
+    font-weight: 400;
   }
+  
   .pagination-controls {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 12px;
     flex-wrap: wrap;
   }
-  .pagination-btn {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: white;
+  
+  /* Active page - blue circular button */
+  .pagination-btn-active {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: default;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-shadow: 0 0 0 1px rgba(52, 152, 219, 0.2);
+  }
+  
+  /* Inactive page numbers and navigation - plain text links */
+  .pagination-link {
+    background: none;
+    border: none;
     color: #2c3e50;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s ease;
-    min-width: 40px;
-    text-align: center;
+    font-weight: 400;
+    padding: 0;
+    text-decoration: none;
+    transition: color 0.2s ease;
   }
-  .pagination-btn:hover:not(:disabled) {
-    background-color: #3498db;
-    color: white;
-    border-color: #3498db;
+  
+  .pagination-link:hover {
+    color: #3498db;
   }
-  .pagination-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  
+  .pagination-link:active {
+    color: #2980b9;
   }
-  .pagination-btn.active {
-    background-color: #3498db;
-    color: white;
-    border-color: #3498db;
-    font-weight: bold;
-  }
-  .pagination-input {
-    width: 60px;
-    padding: 6px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 14px;
-  }
-  .pagination-input:focus {
-    outline: none;
-    border-color: #3498db;
+  
+  @media (max-width: 768px) {
+    .pagination-container {
+      padding: 10px 15px;
+    }
+    
+    .pagination-inner {
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    
+    .pagination-info-left {
+      font-size: 12px;
+      width: 100%;
+    }
+    
+    .pagination-controls {
+      width: 100%;
+      justify-content: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .pagination-btn-active {
+      width: 32px;
+      height: 32px;
+      font-size: 12px;
+    }
+    
+    .pagination-link {
+      font-size: 12px;
+    }
   }
 
   /* Lazy loading placeholder */
@@ -1121,16 +1172,30 @@ window.onload = function() {
  };
  
 function renderEmptyLoading() {
-  console.log('Rendering loading state...');
+  console.log('Rendering skeleton table...');
   const container = document.getElementById('case-container');
   
-  // Create a stable loading skeleton that maintains height
+  // Show skeleton table structure immediately (no spinner)
   container.innerHTML = \`
-    <div class="loading" style="min-height: 600px;">
-      <div class="loading-spinner"></div>
-      <p id="loading-status" style="color: #3498db; font-weight: 500;">Loading cases, please wait...</p>
-      <div id="loading-progress" style="margin-top: 15px; color: #3498db; font-size: 14px; font-weight: 500;"></div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th class="serial-column">#</th>
+            <th>Item No</th>
+            <th>Case Info</th>
+            <th>Parties</th>
+            <th>AI Synopsis</th>
+            <th>Last Proceedings</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="cases-table-body">
+          <tr><td colspan="7" style="text-align: center; padding: 40px; color: #95a5a6;">Preparing data...</td></tr>
+        </tbody>
+      </table>
     </div>
+    <div id="pagination-container"></div>
   \`;
 }
 
@@ -1391,24 +1456,12 @@ async function fetchAllTabCounts() {
      
      console.log(\`Fetched \${relevantCases.length} cases for page \${page} (offset: \${limitStart})\`);
      
-     // Fetch full details for this page only
-     let processedCount = 0;
-     const totalCases = relevantCases.length;
-
-     // Show initial progress
-     updateLoadingProgress(0, totalCases, \`Loading page \${page}...\`);
-     
-     // Fetch full details for all cases in this page
+     // Fetch full details for all cases in this page (silently, no progress updates)
      const pageDetails = await Promise.all(
        relevantCases.map(doc =>
          fetch(\`/api/resource/CCMS3/\${doc.name}\`, { cache: 'no-store' })
            .then(r => r.json())
            .then(d => {
-            processedCount++;
-            // Update progress
-            if (processedCount % 5 === 0 || processedCount === totalCases) {
-              updateLoadingProgress(processedCount, totalCases, \`Loading page \${page} (\${processedCount} of \${totalCases} cases...)\`);
-            }
             return d.data;
           })
        )
@@ -2165,58 +2218,44 @@ function renderPaginationControls(totalPages, totalCases, startIndex, endIndex) 
 
   if (totalPages <= 1) {
     paginationContainer.innerHTML = \`
-      <div class="pagination-info">
-        Showing all \${totalCases} cases
+      <div class="pagination-inner">
+        <div class="pagination-info-left">
+          Showing all \${totalCases} cases
+        </div>
       </div>
     \`;
     return;
   }
 
-  // Calculate which page numbers to show
-  let startPage = Math.max(1, currentPage - 2);
-  let endPage = Math.min(totalPages, currentPage + 2);
+  // Show up to 10 pages starting from current page
+  let startPage = currentPage;
+  let endPage = Math.min(currentPage + 9, totalPages);
 
-  // Adjust if we're near the beginning or end
-  if (currentPage <= 3) {
-    endPage = Math.min(5, totalPages);
-  }
-  if (currentPage >= totalPages - 2) {
-    startPage = Math.max(1, totalPages - 4);
+  // If near the end, show pages before current
+  if (endPage === totalPages && totalPages > 10) {
+    startPage = Math.max(1, totalPages - 9);
+    endPage = totalPages;
   }
 
-  const pageButtons = [];
+  const pageNumbers = [];
   for (let i = startPage; i <= endPage; i++) {
-    pageButtons.push(i);
+    pageNumbers.push(i);
   }
 
   paginationContainer.innerHTML = \`
-    <div class="pagination-info">
-      Showing \${startIndex + 1} to \${Math.min(endIndex, totalCases)} of \${totalCases} cases (Page \${currentPage} of \${totalPages})
-    </div>
-    <div class="pagination-controls">
-      <button class="pagination-btn" onclick="goToPage(1)" \${currentPage === 1 ? 'disabled' : ''}>
-        <i class="fas fa-angle-double-left"></i>
-      </button>
-      <button class="pagination-btn" onclick="goToPage(\${currentPage - 1})" \${currentPage === 1 ? 'disabled' : ''}>
-        <i class="fas fa-angle-left"></i> Prev
-      </button>
-      \${startPage > 1 ? \`<button class="pagination-btn" onclick="goToPage(1)">1</button>\${startPage > 2 ? '<span>...</span>' : ''}\` : ''}
-      \${pageButtons.map(page => \`
-        <button class="pagination-btn \${page === currentPage ? 'active' : ''}" onclick="goToPage(\${page})">
-          \${page}
-        </button>
-      \`).join('')}
-      \${endPage < totalPages ? \`\${endPage < totalPages - 1 ? '<span>...</span>' : ''}<button class="pagination-btn" onclick="goToPage(\${totalPages})">\${totalPages}</button>\` : ''}
-      <button class="pagination-btn" onclick="goToPage(\${currentPage + 1})" \${currentPage === totalPages ? 'disabled' : ''}>
-        Next <i class="fas fa-angle-right"></i>
-      </button>
-      <button class="pagination-btn" onclick="goToPage(\${totalPages})" \${currentPage === totalPages ? 'disabled' : ''}>
-        <i class="fas fa-angle-double-right"></i>
-      </button>
-      <span style="margin-left: 10px;">Go to:</span>
-      <input type="number" class="pagination-input" id="page-input" min="1" max="\${totalPages}" value="\${currentPage}" 
-             onkeypress="if(event.key==='Enter') goToPageInput()">
-      <button class="pagination-btn" onclick="goToPageInput()">Go</button>
+    <div class="pagination-inner">
+      <div class="pagination-info-left">
+        Page \${currentPage} of \${totalPages}
+      </div>
+      <div class="pagination-controls">
+        \${currentPage > 1 ? \`<button class="pagination-link" onclick="goToPage(\${currentPage - 1})" title="Previous page">Prev</button>\` : ''}
+        \${pageNumbers.map(page => 
+          page === currentPage 
+            ? \`<button class="pagination-btn-active" aria-current="page">\${page}</button>\`
+            : \`<button class="pagination-link" onclick="goToPage(\${page})">\${page}</button>\`
+        ).join('')}
+        \${currentPage < totalPages ? \`<button class="pagination-link" onclick="goToPage(\${currentPage + 1})" title="Next page">NEXT</button>\` : ''}
+      </div>
     </div>
   \`;
 }

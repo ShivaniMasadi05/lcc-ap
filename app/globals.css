@@ -786,12 +786,12 @@ body {
 }
 
 .hpv2-container .main-header {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -816,20 +816,20 @@ body {
 
 .hpv2-container .stats-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .hpv2-container .stat-card {
   background: white;
-  padding: 15px 12px;
-  border-radius: 10px;
+  padding: 10px 8px;
+  border-radius: 8px;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -841,19 +841,19 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 3px;
   background: linear-gradient(90deg, var(--accent-color, #007bff), var(--accent-light, #4dabf7));
 }
 
 .hpv2-container .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .hpv2-container .stat-card.active {
   background: #3498db;
   color: white;
-  transform: translateY(-3px);
+  transform: translateY(-1px);
 }
 
 .hpv2-container .stat-card.overdue {
@@ -882,10 +882,11 @@ body {
 }
 
 .hpv2-container .stat-number {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: var(--accent-color, #007bff);
+  line-height: 1.2;
 }
 
 .hpv2-container .stat-card.active .stat-number {
@@ -893,16 +894,18 @@ body {
 }
 
 .hpv2-container .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.85;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
 }
 
 .hpv2-container .stat-icon {
-  font-size: 1.2rem;
-  margin-bottom: 6px;
+  font-size: 1rem;
+  margin-bottom: 4px;
+  line-height: 1;
 }
 
 .hpv2-container .cases-container {
@@ -911,13 +914,13 @@ body {
   box-shadow: 0 20px 64px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   min-height: 500px;
-  padding-bottom: 100px;
-  margin-bottom: 20px;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .hpv2-container .cases-header {
   background: #ffffff;
-  padding: 20px 30px;
+  padding: 16px 24px 12px 24px;
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -925,7 +928,8 @@ body {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .hpv2-container .cases-subtitle {
@@ -935,25 +939,27 @@ body {
 }
 
 .hpv2-container .cases-content {
-  padding: 0;
+  padding: 8px 0 0 0;
   max-height: 70vh;
   overflow-y: auto;
 }
 
 .hpv2-container .case-card {
-  padding: 20px 30px;
+  padding: 16px 24px;
   border-bottom: 1px solid #f1f3f4;
   transition: all 0.3s ease;
   position: relative;
+  margin-bottom: 8px;
 }
 
 .hpv2-container .case-card:hover {
   background: #f8f9fa;
-  padding-left: 35px;
+  padding-left: 28px;
 }
 
 .hpv2-container .case-card:last-child {
   border-bottom: none;
+  margin-bottom: 0;
 }
 
 .hpv2-container .case-card::before {
@@ -995,9 +1001,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
 }
 
 .hpv2-container .case-info {
@@ -1009,15 +1015,15 @@ body {
   font-size: 15px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   line-height: 1.3;
 }
 
 .hpv2-container .case-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .hpv2-container .meta-item {
@@ -1036,7 +1042,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .hpv2-container .status-badge {
@@ -1072,8 +1078,8 @@ body {
 .hpv2-container .case-parties {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 15px;
+  gap: 16px;
+  margin-bottom: 10px;
 }
 
 .hpv2-container .party {
@@ -1097,9 +1103,9 @@ body {
 
 .hpv2-container .case-synopsis {
   background: #f8f9fa;
-  padding: 15px;
+  padding: 12px 14px;
   border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   font-size: 0.9rem;
   line-height: 1.5;
   color: #495057;
@@ -1109,8 +1115,9 @@ body {
 .hpv2-container .case-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
+  margin-top: 4px;
 }
 
 .hpv2-container .btn {
@@ -1377,7 +1384,7 @@ body {
   }
 
   .hpv2-container .stat-number {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
   }
 
   .hpv2-container .case-header {
@@ -1399,6 +1406,6 @@ body {
   }
   
   .hpv2-container .cases-container {
-    padding-bottom: 100px;
+    padding-bottom: 0;
   }
 }
