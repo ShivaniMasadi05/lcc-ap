@@ -206,21 +206,22 @@ export default function LoginPage() {
             </div>
           )}
         </form>
+      </div>
 
-        <div className="lcc-ap-footer">
-          <footer style={{    
-            position: 'relative',
-            bottom: '40px',       
-            textAlign: 'right',
-            color: '#666666',
-            fontSize: '12px',
-            fontStyle: 'italic'
-          }}>
-            <p style={{ margin: '5px 0 0 0', fontSize: '11px', opacity: 0.8 }}>
-              © 2025 Local Command Centre. All rights reserved.
-            </p>
-          </footer>
-        </div>
+      <div className="lcc-ap-footer">
+        <footer style={{    
+          position: 'fixed',
+          bottom: '20px',       
+          right: '24px',
+          textAlign: 'right',
+          color: '#666666',
+          fontSize: '12px',
+          fontStyle: 'italic'
+        }}>
+          <p style={{ margin: '5px 0 0 0', fontSize: '11px', opacity: 0.8 }}>
+            © 2025 Local Command Centre. All rights reserved.
+          </p>
+        </footer>
       </div>
     </div>
   )

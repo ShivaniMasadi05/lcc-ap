@@ -28,6 +28,9 @@ export default function CaseSearchPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [user, setUser] = useState<{ message?: string } | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
     // Set page title
@@ -38,7 +41,48 @@ export default function CaseSearchPage() {
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
     link.rel = 'stylesheet'
     document.head.appendChild(link)
+
+    // Check auth and get user
+    checkAuth()
+
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.lcc-ap-profile-dropdown-container')) {
+        setShowDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch("/api/auth/check", { 
+        credentials: "include" 
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data && data.message && data.message !== "Guest") {
+          setUser(data)
+          setAuthLoading(false)
+        } else {
+          // User is not authenticated, redirect to login
+          router.push('/')
+        }
+      } else {
+        // Auth check failed, redirect to login
+        router.push('/')
+      }
+    } catch (error) {
+      // Auth check error, redirect to login
+      router.push('/')
+    }
+  }
 
   useEffect(() => {
     // Handle ESC key to close modal
@@ -58,6 +102,7 @@ export default function CaseSearchPage() {
   }, [showModal])
 
   const handleLogout = async () => {
+    setShowDropdown(false)
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
@@ -77,8 +122,32 @@ export default function CaseSearchPage() {
     }
   }
 
+  // Get the first letter of the email/username for the profile icon
+  const getInitialLetter = () => {
+    if (!user || !user.message) return 'U'
+    const email = user.message
+    return email.charAt(0).toUpperCase()
+  }
+
+  const handleMyAccount = () => {
+    setShowDropdown(false)
+    alert('My Account feature coming soon!')
+  }
+
+  const handleProfileClick = () => {
+    setShowDropdown(!showDropdown)
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    // Check if user is authenticated before submitting
+    if (!user) {
+      setError('Please login to search cases')
+      router.push('/')
+      return
+    }
+    
     setLoading(true)
     setError('')
     setResults([])
@@ -141,6 +210,17 @@ export default function CaseSearchPage() {
     }
   }
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="glass-card p-8 text-center">
+          <div className="loading-spinner mx-auto mb-4"></div>
+          <div className="gradient-text text-xl font-semibold">Loading Legal Command Center...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Navigation Bar */}
@@ -159,16 +239,31 @@ export default function CaseSearchPage() {
             <h1 className="lcc-ap-nav-title">
               <i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)
             </h1>
+            {user && (
+              <div className="lcc-ap-profile-dropdown-container" style={{ marginLeft: '450px' }}>
+                <div 
+                  className="lcc-ap-profile-icon"
+                  onClick={handleProfileClick}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {getInitialLetter()}
+                </div>
+                {showDropdown && (
+                  <div className="lcc-ap-profile-dropdown">
+                    <div className="lcc-ap-dropdown-item" onClick={handleMyAccount}>
+                      <i className="fas fa-user" style={{ marginRight: '8px' }}></i>
+                      My Account
+                    </div>
+                    <div className="lcc-ap-dropdown-divider"></div>
+                    <div className="lcc-ap-dropdown-item" onClick={handleLogout}>
+                      <i className="fas fa-sign-out-alt" style={{ marginRight: '8px' }}></i>
+                      Sign Out
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          <button
-            onClick={handleLogout}
-            className="lcc-ap-signout-btn"
-          >
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign Out
-          </button>
         </div>
       </nav>
 

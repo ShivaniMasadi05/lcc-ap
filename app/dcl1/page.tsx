@@ -113,7 +113,7 @@ export default function DCL1Page() {
     margin-right: 15px;
   }
   #refresh-btn {
-    margin-left: 270px;
+    margin-left: 400px;
     background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
     color: #0b1020;
     font-weight: 600;
@@ -157,6 +157,78 @@ export default function DCL1Page() {
     background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
     filter: brightness(1.1);
     transform: translateY(-1px);
+  }
+  .profile-dropdown-container {
+    position: relative;
+    margin-left: 650px;
+  }
+  .profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6aa6ff, #7ad1ff);
+    color: #0b1020;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  .profile-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: none;
+    animation: dropdownFadeIn 0.2s ease;
+  }
+  .profile-dropdown.show {
+    display: block;
+  }
+  @keyframes dropdownFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .dropdown-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #1a202c;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  .dropdown-item:hover {
+    background-color: #f5f7fa;
+  }
+  .dropdown-item:active {
+    background-color: #e2e8f0;
+  }
+  .dropdown-divider {
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 4px 0;
   }
   .btn-success {
     background-color: #2ecc71;
@@ -799,6 +871,20 @@ export default function DCL1Page() {
         </svg>
       </button>
       <h1><i class="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)</h1>
+      <div class="profile-dropdown-container" id="profile-dropdown-container" style="display: none;">
+        <div class="profile-icon" id="profile-icon">U</div>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="dropdown-item" id="my-account-item">
+            <i class="fas fa-user" style="margin-right: 8px;"></i>
+            My Account
+          </div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" id="signout-item">
+            <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>
+            Sign Out
+          </div>
+        </div>
+      </div>
     </div>
     <div class="header-actions">
       <div class="search-bar">
@@ -811,12 +897,6 @@ export default function DCL1Page() {
         <button class="btn add-missing-case-btn" id="add-missing-case-btn" style="display: none;">
           <i class="fas fa-plus-circle"></i> Add Missing Case 
         </button>
-      <button class="btn btn-secondary" id="signout-btn">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 8px;">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        Sign Out
-      </button>
     </div>
   </header>
 
@@ -2696,7 +2776,58 @@ document.getElementById('refresh-btn').addEventListener('click', () => {
    window.location.href = '/todaycauselist';
  });
 
- document.getElementById('signout-btn').addEventListener('click', async () => {
+ // Check auth and show profile icon
+ async function checkAuthAndShowProfile() {
+   try {
+     const response = await fetch('/api/auth/check', {
+       credentials: 'include'
+     });
+     
+     if (response.ok) {
+       const data = await response.json();
+       if (data && data.message && data.message !== 'Guest') {
+         const profileContainer = document.getElementById('profile-dropdown-container');
+         const profileIcon = document.getElementById('profile-icon');
+         if (profileContainer && profileIcon) {
+           profileContainer.style.display = 'block';
+           const initial = data.message.charAt(0).toUpperCase();
+           profileIcon.textContent = initial;
+         }
+       }
+     }
+   } catch (error) {
+     console.error('Auth check error:', error);
+   }
+ }
+
+ // Initialize profile on page load
+ checkAuthAndShowProfile();
+
+ // Profile dropdown handlers
+ document.getElementById('profile-icon').addEventListener('click', function(e) {
+   e.stopPropagation();
+   const dropdown = document.getElementById('profile-dropdown');
+   dropdown.classList.toggle('show');
+ });
+
+ // Close dropdown when clicking outside
+ document.addEventListener('click', function(e) {
+   const container = document.getElementById('profile-dropdown-container');
+   const dropdown = document.getElementById('profile-dropdown');
+   if (container && dropdown && !container.contains(e.target)) {
+     dropdown.classList.remove('show');
+   }
+ });
+
+ // My Account handler
+ document.getElementById('my-account-item').addEventListener('click', function() {
+   document.getElementById('profile-dropdown').classList.remove('show');
+   alert('My Account feature coming soon!');
+ });
+
+ // Sign Out handler
+ document.getElementById('signout-item').addEventListener('click', async () => {
+   document.getElementById('profile-dropdown').classList.remove('show');
    try {
      const response = await fetch('/api/auth/logout', {
        method: 'POST',

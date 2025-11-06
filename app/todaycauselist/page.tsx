@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 
 export default function TodaysCauseListPage() {
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<{ message?: string } | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -19,6 +20,19 @@ export default function TodaysCauseListPage() {
     document.head.appendChild(link)
     
     checkAuth()
+
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.lcc-ap-profile-dropdown-container')) {
+        setShowDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [])
 
   const checkAuth = async () => {
@@ -80,23 +94,58 @@ export default function TodaysCauseListPage() {
     )
   }
 
+  // Get the first letter of the email/username for the profile icon
+  const getInitialLetter = () => {
+    if (!user || !user.message) return 'U'
+    const email = user.message
+    return email.charAt(0).toUpperCase()
+  }
+
+  const handleMyAccount = () => {
+    setShowDropdown(false)
+    // TODO: Implement My Account functionality
+    // For now, just show an alert or navigate to account page
+    alert('My Account feature coming soon!')
+  }
+
+  const handleProfileClick = () => {
+    setShowDropdown(!showDropdown)
+  }
+
   return (
     <div className="welcome-page-container bg-gray-50">
       {/* Navigation Bar */}
       <nav className="lcc-ap-navbar">
         <div className="lcc-ap-nav-content">
-          <h1 className="lcc-ap-nav-title">
-            <i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="lcc-ap-signout-btn"
-          >
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign Out
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h1 className="lcc-ap-nav-title">
+              <i className="fas fa-balance-scale"></i>Legal Command Centre (Powered by Valuepitch)
+            </h1>
+            {user && (
+              <div className="lcc-ap-profile-dropdown-container" style={{ marginLeft: '550px' }}>
+                <div 
+                  className="lcc-ap-profile-icon"
+                  onClick={handleProfileClick}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {getInitialLetter()}
+                </div>
+                {showDropdown && (
+                  <div className="lcc-ap-profile-dropdown">
+                    <div className="lcc-ap-dropdown-item" onClick={handleMyAccount}>
+                      <i className="fas fa-user" style={{ marginRight: '8px' }}></i>
+                      My Account
+                    </div>
+                    <div className="lcc-ap-dropdown-divider"></div>
+                    <div className="lcc-ap-dropdown-item" onClick={handleLogout}>
+                      <i className="fas fa-sign-out-alt" style={{ marginRight: '8px' }}></i>
+                      Sign Out
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -149,20 +198,21 @@ export default function TodaysCauseListPage() {
         <div className="welcome-footer">
           <p>Click on any card to access the respective court case listings</p>
         </div>
-        
-        <footer style={{    
-         
-          bottom: '40px',       
-          textAlign: 'right',
-          color: '#666666',
-          fontSize: '12px',
-          fontStyle: 'italic'
-        }}>
-          <p style={{ margin: '5px 0 0 0', fontSize: '11px', opacity: 0.8 }}>
-            © 2025 Local Command Centre. All rights reserved.
-          </p>
-        </footer>
       </div>
+
+      <footer style={{    
+        position: 'fixed',
+        bottom: '20px',       
+        right: '24px',
+        textAlign: 'right',
+        color: '#666666',
+        fontSize: '12px',
+        fontStyle: 'italic'
+      }}>
+        <p style={{ margin: '5px 0 0 0', fontSize: '11px', opacity: 0.8 }}>
+          © 2025 Local Command Centre. All rights reserved.
+        </p>
+      </footer>
     </div>
   )
 }

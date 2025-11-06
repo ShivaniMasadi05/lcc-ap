@@ -104,6 +104,8 @@ export default function HighPriorityV2Page(): JSX.Element {
   const [isPrayerOpen, setIsPrayerOpen] = useState<boolean>(false);
   const [prayerTitle, setPrayerTitle] = useState<string>("");
   const [prayerContent, setPrayerContent] = useState<string>("");
+  const [user, setUser] = useState<{ message?: string } | null>(null);
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -325,7 +327,25 @@ export default function HighPriorityV2Page(): JSX.Element {
     }
   }, []);
 
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/check", { 
+        credentials: "include" 
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.message && data.message !== "Guest") {
+          setUser(data);
+        }
+      }
+    } catch (error) {
+      // User may not be logged in
+    }
+  }, []);
+
   const handleLogout = useCallback(async () => {
+    setShowDropdown(false);
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
@@ -345,6 +365,22 @@ export default function HighPriorityV2Page(): JSX.Element {
     }
   }, [router]);
 
+  // Get the first letter of the email/username for the profile icon
+  const getInitialLetter = useCallback(() => {
+    if (!user || !user.message) return 'U';
+    const email = user.message;
+    return email.charAt(0).toUpperCase();
+  }, [user]);
+
+  const handleMyAccount = useCallback(() => {
+    setShowDropdown(false);
+    alert('My Account feature coming soon!');
+  }, []);
+
+  const handleProfileClick = useCallback(() => {
+    setShowDropdown(!showDropdown);
+  }, [showDropdown]);
+
   useEffect(() => {
     // Set page title
     if (typeof document !== 'undefined') {
@@ -359,9 +395,29 @@ export default function HighPriorityV2Page(): JSX.Element {
       }
     }
     
-    // Fetch data immediately
+    // Check auth and get user
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.lcc-ap-profile-dropdown-container')) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Fetch data immediately on mount
     fetchData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchData]);
 
   useEffect(() => {
     // Refresh data every 5 minutes
@@ -369,7 +425,7 @@ export default function HighPriorityV2Page(): JSX.Element {
       fetchData();
     }, 5 * 60 * 1000);
     return () => clearInterval(id);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchData]);
 
   return (
     <>
@@ -389,16 +445,31 @@ export default function HighPriorityV2Page(): JSX.Element {
           <h1 className="main-title"><i className="fa fa-balance-scale" aria-hidden="true"></i>Legal Command Centre (Powered by Valuepitch)</h1>
             <p className="header-subtitle">High Priority Cases Dashboard - Real-time monitoring of critical CCMS2 cases</p>
           </div>
+          {user && (
+            <div className="lcc-ap-profile-dropdown-container" style={{ marginLeft: '750px' }}>
+              <div 
+                className="lcc-ap-profile-icon"
+                onClick={handleProfileClick}
+                style={{ cursor: 'pointer' }}
+              >
+                {getInitialLetter()}
+              </div>
+              {showDropdown && (
+                <div className="lcc-ap-profile-dropdown">
+                  <div className="lcc-ap-dropdown-item" onClick={handleMyAccount}>
+                    <i className="fas fa-user" style={{ marginRight: '8px' }}></i>
+                    My Account
+                  </div>
+                  <div className="lcc-ap-dropdown-divider"></div>
+                  <div className="lcc-ap-dropdown-item" onClick={handleLogout}>
+                    <i className="fas fa-sign-out-alt" style={{ marginRight: '8px' }}></i>
+                    Sign Out
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <button 
-          className="lcc-ap-signout-btn"
-          onClick={handleLogout}
-        >
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Sign Out
-        </button>
       </div>
 
       <div className="stats-container">
